@@ -1,0 +1,38 @@
+# Razorpay Configuration
+# Get these from your Razorpay Dashboard: https://dashboard.razorpay.com/
+
+# Test Credentials (for development)
+RAZORPAY_KEY_ID=rzp_test_your_key_id_here
+RAZORPAY_KEY_SECRET=your_key_secret_here
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_here
+
+# Production Credentials (for live environment)
+# RAZORPAY_KEY_ID=rzp_live_your_key_id_here
+# RAZORPAY_KEY_SECRET=your_live_key_secret_here
+# RAZORPAY_WEBHOOK_SECRET=your_live_webhook_secret_here
+
+# Frontend Environment Variables (add to .env file in React app)
+REACT_APP_RAZORPAY_KEY_ID=rzp_test_your_key_id_here
+
+# API Configuration
+PORT=3001
+API_BASE_URL=http://localhost:3001
+
+# Database Configuration (if using)
+DATABASE_URL=your_database_connection_string
+
+# Email Configuration (for payment confirmations)
+SMTP_HOST=your_smtp_host
+SMTP_PORT=587
+SMTP_USER=your_email@domain.com
+SMTP_PASS=your_email_password
+
+# Security
+JWT_SECRET=your_jwt_secret_for_authentication
+SESSION_SECRET=your_session_secret
+
+# Instructions:
+# 1. Copy this file to .env in your project root
+# 2. Replace placeholder values with actual credentials
+# 3. Never commit .env files to version control
+# 4. Use different credentials for development and production

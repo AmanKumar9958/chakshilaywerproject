@@ -1,0 +1,154 @@
+/* Settings Component CSS */
+
+/* Font Size Classes */
+.font-small {
+  font-size: 14px;
+}
+
+.font-medium {
+  font-size: 16px;
+}
+
+.font-large {
+  font-size: 18px;
+}
+
+.font-x-large {
+  font-size: 20px;
+}
+
+/* Theme Classes */
+body.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #d1d5db;
+}
+
+body.dark {
+  --bg-primary: #1f2937;
+  --bg-secondary: #111827;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body.high-contrast {
+  --bg-primary: #000000;
+  --bg-secondary: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #ffffff;
+  --border-color: #ffffff;
+}
+
+body.high-contrast.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #000000;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --border-color: #000000;
+}
+
+/* Responsive adjustments for font sizes */
+@media (max-width: 640px) {
+  .font-small {
+    font-size: 13px;
+  }
+  
+  .font-medium {
+    font-size: 15px;
+  }
+  
+  .font-large {
+    font-size: 17px;
+  }
+  
+  .font-x-large {
+    font-size: 19px;
+  }
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Form field focus states for better accessibility */
+.form-input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Success/Error state animations */
+.toast-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.toast-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.toast-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-exit-active {
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Theme transition effects */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* High contrast mode adjustments */
+body.high-contrast button {
+  border: 2px solid currentColor !important;
+}
+
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+  border: 2px solid currentColor !important;
+  background-color: transparent !important;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin {
+    animation: none;
+  }
+  
+  body {
+    transition: none;
+  }
+  
+  .toast-enter-active,
+  .toast-exit-active {
+    transition: none;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

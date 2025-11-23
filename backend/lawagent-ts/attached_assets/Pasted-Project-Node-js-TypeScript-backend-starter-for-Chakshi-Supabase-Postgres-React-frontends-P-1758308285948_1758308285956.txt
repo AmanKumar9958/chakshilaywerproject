@@ -1,0 +1,120 @@
+Project: Node.js + TypeScript backend starter for Chakshi (Supabase Postgres + React frontends)
+
+Please generate a complete starter repo (one commit) implementing a clean, well-commented **Node.js + TypeScript** backend skeleton that I can immediately open and edit in VS Code. Requirements:
+
+1. Tech stack & tools
+- Node.js (>=18) + TypeScript
+- HTTP framework: Express (or Fastify if you prefer) with typed routes
+- ORM: Prisma configured for Postgres (schema + migrations + simple seed)
+- Supabase server client integration (server-only usage of service_role key)
+- JWT verification middleware that verifies Supabase auth tokens
+- Supabase Storage signed-URL helper for secure upload flow
+- Razorpay integration (order creation + webhook verification)
+- Dockerfile + docker-compose (dev) and npm scripts (dev, build, start, migrate, seed, lint, test)
+- ESLint + Prettier + basic Jest test
+- OpenAPI (swagger) or Postman collection auto-generated for the sample endpoints
+- README and .env.example (no real secrets)
+
+2. Repo / folder structure (exact files with comments and TODOs)
+- src/
+  - app.ts (Express app bootstrap)
+  - server.ts (start)
+  - config/ (env config loader)
+  - modules/
+    - auth/ (jwt verification middleware, sample route)
+    - dashboard/ (controller + routes)
+    - advocate/ (controller + routes)
+    - student/ (controller + routes)
+    - uploads/ (signed-url endpoints, metadata recording)
+    - payments/ (razorpay order + webhook)
+  - services/
+    - supabaseClient.ts (server client init)
+    - prisma.ts (Prisma client)
+    - storage.ts (signed URL helper)
+    - razorpay.ts (razorpay helper)
+  - middleware/ (auth, role-check, validation, error handler)
+  - jobs/ (placeholder for worker queue)
+  - utils/ (logger, helpers)
+- prisma/
+  - schema.prisma (models: User, Profile, Case, Document, Notification, Template, Course, Enrollment, Payment)
+  - migrations/ (generated)
+  - seed.ts (creates some sample users, advocate, student, templates)
+- scripts/
+  - migrate.sh
+  - seed.sh
+- docker/Dockerfile, docker-compose.yml
+- .env.example (placeholders only; list required vars)
+- README.md (setup + run + env + how to use signed uploads + how to run migrations)
+- openapi.yaml OR postman_collection.json
+
+3. Required endpoints (implement light skeleton logic + comments; no external secret values)
+- POST /auth/verify-token  — verify Supabase JWT (returns user id + role)
+- GET /api/dashboard/summary — returns counts and featured templates (sample JSON)
+- GET /api/templates — list templates
+- GET /api/advocate/:id/profile — advocate profile
+- GET /api/advocate/:id/cases — paginated list
+- POST /api/advocate/:id/upload — accepts file metadata + returns signed upload URL from Supabase Storage; store metadata in `documents` table
+- GET /api/student/:id/profile — student profile
+- GET /api/student/:id/courses — student course list
+- POST /api/payments/razorpay/order — create Razorpay order (mock mode if keys absent)
+- POST /api/payments/razorpay/webhook — verify signature and update Payment record
+- GET /api/docs  — serve OpenAPI swagger UI
+
+4. DB models (Prisma high-level)
+- User { id, email, role, name, createdAt }
+- Profile { id, userId, metaJson }
+- Case { id, advocateId, clientId, title, status, metaJson, createdAt }
+- Document { id, ownerId, caseId?, fileUrl, storagePath, mime, size, uploadedAt }
+- Notification { id, userId, title, body, read, createdAt }
+- Template { id, title, body, tags, public }
+- Course, Enrollment, Payment { basic fields to illustrate flow }
+
+5. Auth & Security
+- Use Supabase JWT verification middleware for protected routes
+- Example role-check middleware (advocate/student/admin)
+- DO NOT place SUPABASE_SERVICE_ROLE_KEY or Razorpay secrets into code; use environment variables
+- Provide .env.example with:
+  SUPABASE_URL=
+  SUPABASE_SERVICE_ROLE_KEY=
+  SUPABASE_ANON_KEY=
+  DATABASE_URL=
+  RAZORPAY_KEY_ID=
+  RAZORPAY_KEY_SECRET=
+  NODE_ENV=
+  PORT=
+  REDIS_URL= (optional)
+- Implement CORS, helmet, rate-limiter basic setup
+
+6. File upload flow (recommended)
+- Implement endpoint POST /api/uploads/sign that:
+  - verifies user JWT
+  - validates file metadata (name, size, mime)
+  - calls Supabase Storage API to create a signed upload URL
+  - returns signed URL + storage path
+- Provide sample client usage in README (how React should call it and then PUT to Supabase Storage)
+
+7. Razorpay & Payments
+- Implement service methods to create order and verify webhook signatures
+- Webhook endpoint must validate signature and update DB
+- Use environment flags to run in test/mode
+
+8. Tests + docs
+- Provide 3 simple Jest tests (auth middleware, one sample endpoint)
+- Provide API spec (OpenAPI or Postman)
+- README: clone -> npm install -> copy .env.example -> set env -> prisma migrate dev -> npm run dev
+- Add TODO comments where further agent/AI integrations and worker logic should go
+
+9. Developer ergonomics
+- Use TypeScript types everywhere
+- Add helpful console logs and TODO markers where I will extend agent features
+- Keep code modular and easy to navigate for future extension
+
+10. Output expectation
+- Produce a runnable scaffold that on `npm run dev` starts the server and exposes the above endpoints (some returning seeded data).
+- Do NOT include any real credentials. Use placeholders and instruct how to wire Supabase + Razorpay keys.
+- Add short notes on which files to edit for connecting frontends at /api/* routes.
+
+---
+
+Make the repo minimal but real — enough to plug into the existing React frontends and begin iterative development. Keep comments and TODOs to guide next steps.
+

@@ -1,0 +1,397 @@
+/* Dashboard.css - Complete CSS with New Color Palette */
+.legal-education-dashboard {
+  min-height: 100vh;
+  background-color: #f5f5ef;
+  color: #1f2839;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(182, 157, 116, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(31, 40, 57, 0.05);
+}
+
+.welcome-section h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #1f2839, #b69d74);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-section p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.date-info {
+  text-align: right;
+  color: #6b7280;
+}
+
+.date-info span {
+  display: block;
+}
+
+.current-time {
+  font-size: 0.9rem;
+  color: #b69d74;
+  font-weight: 600;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(182, 157, 116, 0.12);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(31, 40, 57, 0.05);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(182, 157, 116, 0.15);
+  border-color: rgba(182, 157, 116, 0.25);
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  padding: 0.75rem;
+  background: rgba(182, 157, 116, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(182, 157, 116, 0.15);
+}
+
+.stat-content h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: #1f2839;
+}
+
+.stat-content p {
+  color: #6b7280;
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.stat-progress {
+  width: 100%;
+  height: 4px;
+  background: rgba(182, 157, 116, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stat-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #b69d74, #b69d74CC);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.dashboard-section {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(182, 157, 116, 0.12);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(31, 40, 57, 0.05);
+}
+
+.progress-section {
+  grid-column: 1 / -1;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(182, 157, 116, 0.1);
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1f2839;
+}
+
+.see-all-btn,
+.add-task-btn,
+.task-action {
+  background: linear-gradient(135deg, #b69d74, #b69d74DD);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.see-all-btn:hover,
+.add-task-btn:hover,
+.task-action:hover {
+  background: linear-gradient(135deg, #b69d74DD, #b69d74);
+  box-shadow: 0 0 15px #b69d7440;
+  transform: translateY(-1px);
+}
+
+/* Fixed: Replaced space-y with proper CSS */
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(182, 157, 116, 0.08);
+  transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+  background: rgba(182, 157, 116, 0.05);
+  border-color: rgba(182, 157, 116, 0.15);
+}
+
+.activity-icon {
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  background: rgba(182, 157, 116, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(182, 157, 116, 0.15);
+}
+
+.activity-content p {
+  margin: 0 0 0.25rem 0;
+  color: #1f2839;
+  font-weight: 500;
+}
+
+.activity-time {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Fixed: Replaced space-y with proper CSS */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(182, 157, 116, 0.08);
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  background: rgba(182, 157, 116, 0.05);
+  border-color: rgba(182, 157, 116, 0.15);
+}
+
+.task-item.priority-high {
+  border-left: 4px solid #f59e0b;
+}
+
+.task-item.priority-medium {
+  border-left: 4px solid #3b82f6;
+}
+
+.task-item.priority-low {
+  border-left: 4px solid #10b981;
+}
+
+.task-content h4 {
+  margin: 0 0 0.25rem 0;
+  color: #1f2839;
+  font-weight: 600;
+}
+
+.due-date {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.task-action {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.progress-item h4 {
+  margin: 0 0 1rem 0;
+  color: #1f2839;
+  font-weight: 600;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(182, 157, 116, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b69d74, #b69d74CC);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-bar-container span {
+  color: #b69d74;
+  font-weight: 600;
+  min-width: 3rem;
+}
+
+.badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(182, 157, 116, 0.08);
+  border: 1px solid rgba(182, 157, 116, 0.15);
+  border-radius: 8px;
+  color: #1f2839;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  background: rgba(182, 157, 116, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(182, 157, 116, 0.2);
+}
+
+.badge-icon {
+  font-size: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .progress-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .legal-education-dashboard {
+    padding: 1rem;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .date-info {
+    text-align: center;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .activity-item,
+  .task-item,
+  .badge {
+    transition: none;
+  }
+}
+
+button:focus-visible {
+  outline: 2px solid #b69d74;
+  outline-offset: 2px;
+}
+
+@media (prefers-contrast: high) {
+  .stat-card,
+  .dashboard-section,
+  .dashboard-header {
+    background: white;
+    border-color: #1f2839;
+  }
+  
+  .stat-content h3,
+  .section-header h2 {
+    color: #000;
+  }
+}

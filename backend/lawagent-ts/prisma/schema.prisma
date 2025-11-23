@@ -1,0 +1,427 @@
+// Prisma schema for Chakshi backend
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum definitions
+enum UserRole {
+  ADVOCATE
+  CLERK
+  STUDENT
+}
+
+enum CaseStatus {
+  ACTIVE
+  PENDING
+  COMPLETED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ReviewStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+}
+
+enum BillingStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
+enum ScheduleType {
+  PERSONAL
+  HEARING
+  COURSE_DEADLINE
+  ASSIGNMENT_DEADLINE
+  OTHER
+}
+
+enum SchedulePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum DocumentType {
+  LEGAL_DOCUMENT
+  EVIDENCE
+  CONTRACT
+  CERTIFICATE
+  OTHER
+}
+
+// Core User model
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  role              UserRole @default(STUDENT)
+  name              String
+  phone             String?
+  specialization    String?
+  barRegistration   String?  @map("bar_registration")
+  bio               String?
+  avatar            String?
+  isActive          Boolean  @default(true)
+  timezone          String? // e.g., "America/New_York"
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  advocateProfile AdvocateProfile?
+  cases           Case[]           @relation("CaseAdvocate")
+  documents       Document[]
+  notifications   Notification[]
+  enrollments     Enrollment[]
+  payments        Payment[]
+  clients         Client[]         @relation("ClientCreatedBy")
+  documentComparisons DocumentComparison[] @relation("Creator")
+  simulations     Simulation[]     @relation("UserSimulations")
+  activities      Activity[]       @relation("UserActivities")
+  clerkAssignments AdvocateClerk[] @relation("ClerkAssignments")
+  advocateAssignments AdvocateClerk[] @relation("AdvocateAssignments")
+  clerkCases          Case[]          @relation("CaseClerk")
+  createdTemplates    Template[]
+  schedules           Schedule[]      @relation("UserSchedules") // Link to personal schedules
+
+  @@map("users")
+}
+
+// Advocate Profile
+model AdvocateProfile {
+  id       String  @id @default(cuid())
+  userId   String  @unique
+  firmName String?
+  barId    String?
+  metaJson Json?   // Flexible metadata storage
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("advocate_profiles")
+}
+
+// Client model
+model Client {
+  id                String         @id @default(uuid())
+  name              String
+  email             String?        @unique
+  phone             String?
+  organisation      String?
+  billingStatus     BillingStatus  @default(PENDING) @map("billing_status")
+  preferredContact  String?        @map("preferred_contact")
+  createdBy         String?        @map("created_by")
+  createdAt         DateTime       @default(now())
+
+  user              User?          @relation("ClientCreatedBy", fields: [createdBy], references: [id])
+  cases             Case[]
+  documents         Document[]     @relation("ClientDocuments")
+  activities        Activity[]     @relation("ClientActivities")
+
+  @@map("clients")
+}
+
+// Legal case management
+model Case {
+  id                String         @id @default(uuid())
+  title             String         @unique
+  category          String?
+  status            CaseStatus     @default(ACTIVE)
+  progressPct       Decimal?       @default(0) @map("progress_pct") @db.Decimal(5,2)
+  riskLevel         RiskLevel?     @default(MEDIUM) @map("risk_level")
+  successProbPct    Decimal?       @map("success_prob_pct") @db.Decimal(5,2)
+  valueUsd          Decimal?       @map("value_usd")
+  clientId          String?        @map("client_id")
+  advocateId        String         @map("advocate_id")
+  clerkId           String?        @map("clerk_id")
+  openedDate        DateTime?      @map("opened_date") @db.Date
+  closedDate        DateTime?      @map("closed_date") @db.Date
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  // Relations
+  client            Client?        @relation(fields: [clientId], references: [id])
+  advocate          User           @relation("CaseAdvocate", fields: [advocateId], references: [id])
+  clerk             User?          @relation("CaseClerk", fields: [clerkId], references: [id])
+  documents         Document[]
+  hearings          Hearing[]
+  caseStages        CaseStage[]
+  simulations       Simulation[]   @relation("CaseSimulations")
+  activities        Activity[]     @relation("CaseActivities")
+  schedules         Schedule[]     @relation("CaseSchedules")
+
+  @@map("cases")
+}
+
+// Hearings
+model Hearing {
+  id                String    @id @default(uuid())
+  caseId            String    @map("case_id")
+  courtName         String?   @map("court_name")
+  courtRoom         String?   @map("court_room")
+  hearingDatetime   DateTime  @map("hearing_datetime")
+  status            String?   // e.g. Confirmed / Under-Review
+  preparationNeeded Boolean   @default(false) @map("preparation_needed")
+  createdAt         DateTime  @default(now())
+
+  case              Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("hearings")
+}
+
+// Case Stages (for progress)
+model CaseStage {
+  id          Int       @id @default(autoincrement())
+  caseId      String    @map("case_id")
+  stageName   String?   @map("stage_name")
+  position    Int?
+  completed   Boolean   @default(false)
+  completedAt DateTime? @map("completed_at")
+
+  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("case_stages")
+}
+
+// Document and file management
+model Document {
+  id             String       @id @default(uuid())
+  caseId         String?      @map("case_id")
+  clientId       String?      @map("client_id")
+  uploaderId     String?      @map("uploader_id")
+  docType        String?      @map("doc_type")
+  storagePath    String       @map("storage_path")
+  originalName   String?      @map("original_name")
+  sizeBytes      BigInt?      @map("size_bytes")
+  reviewStatus   ReviewStatus @default(PENDING) @map("review_status")
+  uploadedAt     DateTime     @default(now()) @map("uploaded_at")
+
+  case           Case?        @relation(fields: [caseId], references: [id])
+  client         Client?      @relation("ClientDocuments", fields: [clientId], references: [id])
+  uploader       User?        @relation(fields: [uploaderId], references: [id])
+  comparisons1   DocumentComparison[] @relation("Document1")
+  comparisons2   DocumentComparison[] @relation("Document2")
+
+  @@map("documents")
+}
+
+// Document Comparisons
+model DocumentComparison {
+  id              String    @id @default(uuid())
+  doc1Id          String    @map("doc1_id")
+  doc2Id          String    @map("doc2_id")
+  summary         String?
+  differences     Json?
+  similarities    Json?
+  riskAssessment  String?   @map("risk_assessment")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now())
+
+  doc1            Document  @relation("Document1", fields: [doc1Id], references: [id])
+  doc2            Document  @relation("Document2", fields: [doc2Id], references: [id])
+  creator         User?     @relation("Creator", fields: [createdBy], references: [id])
+
+  @@map("document_comparisons")
+}
+
+// Simulations
+model Simulation {
+  id          String    @id @default(uuid())
+  caseId      String    @map("case_id")
+  userId      String    @map("user_id")
+  simType     String?   @map("sim_type") // 'ARGUMENT' | 'CROSS'
+  style       String?
+  content     String?
+  createdAt   DateTime  @default(now())
+
+  case        Case      @relation("CaseSimulations", fields: [caseId], references: [id], onDelete: Cascade)
+  user        User      @relation("UserSimulations", fields: [userId], references: [id])
+
+  @@map("simulations")
+}
+
+// Activity Log
+model Activity {
+  id          BigInt    @id @default(autoincrement())
+  userId      String?   @map("user_id")
+  caseId      String?   @map("case_id")
+  clientId    String?   @map("client_id")
+  message     String
+  createdAt   DateTime  @default(now())
+
+  user        User?     @relation("UserActivities", fields: [userId], references: [id])
+  case        Case?     @relation("CaseActivities", fields: [caseId], references: [id])
+  client      Client?   @relation("ClientActivities", fields: [clientId], references: [id])
+
+  @@map("activities")
+}
+
+// Schedule/Event Management
+model Schedule {
+  id                  String           @id @default(cuid())
+  userId              String?          @map("user_id") // Direct link to user for personal events
+  caseId              String?          @map("case_id")  // Optional: related case
+  title               String
+  description         String?
+  scheduledAt         DateTime         // ISO 8601 with timezone
+  location            String?
+  type                ScheduleType     @default(PERSONAL) // Type of schedule event
+  priority            SchedulePriority @default(MEDIUM)   // Priority of the event
+  preparationRequired Boolean          @default(false) @map("preparation_required") // Indicates if preparation is required
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User? @relation("UserSchedules", fields: [userId], references: [id])
+  case Case? @relation("CaseSchedules", fields: [caseId], references: [id])
+
+  @@map("schedules")
+}
+
+// Notification system
+model Notification {
+  id          BigInt    @id @default(autoincrement())
+  userId      String?   @map("user_id")
+  type        String?
+  payload     Json?
+  isRead      Boolean   @default(false) @map("is_read")
+  createdAt   DateTime  @default(now())
+
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+
+
+// Course/Education system
+model Course {
+  id          String  @id @default(cuid())
+  title       String  @unique
+  description String?
+  content     String? // Course content
+  duration    Int?    // Duration in minutes
+  price       Decimal @default(0) @db.Decimal(10, 2)
+  isActive    Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+// Student enrollment in courses
+model Enrollment {
+  id         String   @id @default(cuid())
+  userId     String
+  courseId   String
+  progress   Int      @default(0) // Progress percentage (0-100)
+  completed  Boolean  @default(false)
+  
+  enrolledAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+// Payment management
+model Payment {
+  id               String        @id @default(cuid())
+  userId           String
+  amount           Decimal       @db.Decimal(10, 2)
+  currency         String        @default("INR")
+  status           PaymentStatus @default(PENDING)
+  razorpayOrderId  String?       @unique
+  razorpayPaymentId String?      @unique
+  metadata         Json?         // Additional payment metadata
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("payments")
+}
+
+// Mapping table for Advocates and Clerks
+model AdvocateClerk {
+  clerkId     String @map("clerk_id")
+  advocateId  String @map("advocate_id")
+  assignedAt  DateTime @default(now())
+
+  clerk       User @relation("ClerkAssignments", fields: [clerkId], references: [id])
+  advocate    User @relation("AdvocateAssignments", fields: [advocateId], references: [id])
+
+  @@id([clerkId, advocateId])
+  @@map("advocate_clerks")
+}
+
+// Template Categories
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  slug        String    @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  templates   Template[]
+
+  @@map("categories")
+}
+
+// Template system for documents/forms
+model Template {
+  id                String    @id @default(uuid())
+  title             String    @unique
+  description       String?
+  content           String    // Template content (HTML/Markdown or reference)
+  categoryId        String    @map("category_id")
+  tags              String[]  @default([])
+  isPublic          Boolean   @default(true) @map("is_public")
+  isFree            Boolean   @default(false) @map("is_free")
+  difficulty        String?   // e.g., "Beginner", "Intermediate", "Advanced"
+  rating            Decimal?  @db.Decimal(2,1)
+  ratingCount       Int?      @map("rating_count")
+  completionTimeMin Int?      @map("completion_time_min")
+  successRatePct    Decimal?  @map("success_rate_pct") @db.Decimal(5,2)
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  category          Category  @relation(fields: [categoryId], references: [id])
+  creator           User?     @relation(fields: [createdBy], references: [id])
+
+  @@map("templates")
+}

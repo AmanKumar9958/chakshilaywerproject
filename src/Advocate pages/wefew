@@ -1,0 +1,1024 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X, Download, Settings2, FileSearch2, Languages, ShieldCheck, GitCompare,
+  Loader2, ChevronUp, ChevronDown, Search, CheckCircle2, XCircle, ArrowLeft
+} from "lucide-react";
+
+/**
+ * 3-Panel Intelligent Document Analysis Workspace — Single-file component (JS)
+ * Color palette adapted from your screenshot (sand / mint / teal / neutral).
+ * Requires: tailwindcss, framer-motion, lucide-react
+ */
+
+const THEME = {
+  // Neutrals / background
+  bg: "#F6F6F0",
+  surface: "#FFFFFF",
+  border: "#E0DDD2",
+
+  // Text
+  ink: "#0E172A",
+  inkMuted: "#4C515D",
+
+  // Warm sand (primary brand controls)
+  sand300: "#D9CDB8",
+  sand400: "#C1AB88", // header / primary button
+  sand500: "#AD9C80", // hover
+
+  // Mint/teal accents
+  mint200: "#DAE5E0",
+  mint300: "#CFE6DA",
+  teal700: "#307658",
+
+  // Grays
+  neutral300: "#D8D8D8",
+  neutral500: "#9D988F",
+};
+
+const N8N_COMPARE_ENDPOINT =
+  "https://n8n.srv983857.hstgr.cloud/webhook/a027ab82-e53c-4246-9982-c41c79ac9bca";
+
+// ---------- utilities ----------
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const clsx = (...s) => s.filter(Boolean).join(" ");
+
+// super-naive diff (token frequency) to render green additions / red removals
+function simpleDiff(oldText, newText) {
+  const oldWords = oldText.split(/\s+/);
+  const newWords = newText.split(/\s+/);
+  const oldCount = {};
+  const newCount = {};
+  for (const w of oldWords) oldCount[w] = (oldCount[w] || 0) + 1;
+  for (const w of newWords) newCount[w] = (newCount[w] || 0) + 1;
+  const additions = [];
+  const removals = [];
+  Object.keys(newCount).forEach((w) => {
+    const d = (newCount[w] || 0) - (oldCount[w] || 0);
+    if (d > 0) additions.push(...Array(d).fill(w));
+  });
+  Object.keys(oldCount).forEach((w) => {
+    const d = (oldCount[w] || 0) - (newCount[w] || 0);
+    if (d > 0) removals.push(...Array(d).fill(w));
+  });
+  return { additions, removals };
+}
+
+const riskPill = (lvl) =>
+  lvl === "High"
+    ? "bg-red-100 text-red-700 border-red-300"
+    : lvl === "Medium"
+    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+    : "bg-green-100 text-green-700 border-green-300";
+
+// Demo text for other tools
+const DEMO_ORIGINAL = `This Master Service Agreement (MSA) governs the relationship between Client and Vendor.
+
+7.2 Termination: Either party may terminate this agreement with thirty (30) days' prior written notice.
+
+8.1 Confidentiality: The parties shall protect confidential information.
+
+10.3 Liability: Vendor's total liability shall not exceed the fees paid in the twelve (12) months preceding the claim.`;
+
+const DEMO_SECOND = `This Master Service Agreement governs the relationship between Customer and Supplier.
+
+7.2 Termination: Either party may terminate this agreement with fifteen (15) days' prior written notice.
+
+8.1 Confidentiality: The parties shall protect confidential and proprietary information.
+
+10.3 Liability: Vendor's total liability shall not exceed the fees paid.`;
+
+const DEMO_TRANSLATIONS = {
+  Hindi:
+    "यह मास्टर सेवा अनुबंध (MSA) क्लाइंट और विक्रेता के बीच संबंधों को नियंत्रित करता है...",
+  Spanish:
+    "Este Acuerdo Marco de Servicios regula la relación entre Cliente y Proveedor...",
+  French:
+    "Le présent Contrat-cadre de services régit la relation entre le Client et le Fournisseur...",
+};
+
+// ---------- main ----------
+export default function DocumentAnalysisWorkspace() {
+  const [route, setRoute] = useState("workspace"); // "workspace" | "auth-report"
+  const [docName] = useState("Master Service Agreement.pdf");
+
+  const [activeTool, setActiveTool] = useState("compare"); // "compare" | "risk" | "translate" | "search" | "auth"
+
+  // bottom strip
+  const [bottomOpen, setBottomOpen] = useState(true);
+  const [bottomTab, setBottomTab] = useState("assistant"); // "assistant" | "insights"
+
+  // ======== COMPARE (PDF vs PDF through n8n) ========
+  // Left-top: STATIC PDF (replace with your asset path)
+  const [staticPdfUrl, setStaticPdfUrl] = useState("/contract1.pdf");
+
+  // Left-bottom: user-uploaded PDF
+  const [secondPdfFile, setSecondPdfFile] = useState(null);
+  const [secondPdfUrl, setSecondPdfUrl] = useState(null);
+
+  // Compare state
+  const [isComparing, setIsComparing] = useState(false);
+  const [compareReport, setCompareReport] = useState(null); // server response (any shape)
+  const [serverError, setServerError] = useState("");
+
+  // Optional client-side token diff if server returns extracted texts
+  const [tokenAdditions, setTokenAdditions] = useState([]);
+  const [tokenRemovals, setTokenRemovals] = useState([]);
+
+  // Clean up object URL for uploaded PDF
+  useEffect(() => {
+    if (!secondPdfFile) {
+      setSecondPdfUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(secondPdfFile);
+    setSecondPdfUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [secondPdfFile]);
+
+  // Fetch a URL and return a File instance (so we can send as multipart/form-data)
+  async function urlToFile(url, filename = "contract1.pdf") {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch static PDF (${res.status})`);
+    const blob = await res.blob();
+    const type = blob.type || "application/pdf";
+    return new File([blob], filename, { type });
+  }
+
+  async function performCompare() {
+    try {
+      setServerError("");
+      setCompareReport(null);
+      setTokenAdditions([]);
+      setTokenRemovals([]);
+      setIsComparing(true);
+
+      if (!staticPdfUrl) throw new Error("Static PDF URL missing");
+      if (!secondPdfFile) throw new Error("Please upload the second PDF first");
+
+      const file1 = await urlToFile(staticPdfUrl, "contract1.pdf");
+      const file2 = secondPdfFile; // already a File
+
+      const form = new FormData();
+      form.append("file1", file1);
+      form.append("file2", file2);
+
+      const res = await fetch(N8N_COMPARE_ENDPOINT, {
+        method: "POST",
+        body: form,
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Server ${res.status}: ${txt.slice(0, 200)}`);
+      }
+
+      const ctype = res.headers.get("content-type") || "";
+      const data = ctype.includes("application/json") ? await res.json() : await res.text();
+
+      // Try to compute a local token diff if server returns extracted text fields
+      const t1 = (data && (data.text1 || data.extracted1 || data.file1Text || data.doc1)) || "";
+      const t2 = (data && (data.text2 || data.extracted2 || data.file2Text || data.doc2)) || "";
+      if (t1 && t2) {
+        const d = simpleDiff(t1, t2);
+        setTokenAdditions(d.additions || []);
+        setTokenRemovals(d.removals || []);
+      } else if (data && Array.isArray(data.additions) && Array.isArray(data.removals)) {
+        // Or honor additions/removals if the API provides them directly
+        setTokenAdditions(data.additions);
+        setTokenRemovals(data.removals);
+      }
+
+      setCompareReport(data);
+    } catch (err) {
+      setServerError(err?.message || String(err));
+    } finally {
+      setIsComparing(false);
+    }
+  }
+
+  // ======== Other tools (reuse your existing demo text logic) ========
+  // risk tool
+  const [selection, setSelection] = useState(null); // {start, end}
+  const [riskAnalysing, setRiskAnalysing] = useState(false);
+  const [riskFindings, setRiskFindings] = useState([]); // [{ clause, level, explanation, safer }]
+  const originalRef = useRef(null);
+
+  const [original, setOriginal] = useState(DEMO_ORIGINAL);
+  const [secondText, setSecondText] = useState(DEMO_SECOND);
+
+  const captureSelection = () => {
+    if (!originalRef.current) return;
+    const el = originalRef.current;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    if (end > start) setSelection({ start, end });
+  };
+
+  const analyseRisk = async () => {
+    if (!selection) return;
+    setRiskAnalysing(true);
+    await sleep(1000);
+    const picked = original.slice(selection.start, selection.end);
+    const level = picked.toLowerCase().includes("liability")
+      ? "High"
+      : picked.toLowerCase().includes("termination")
+      ? "Medium"
+      : "Low";
+    setRiskFindings([
+      {
+        clause: picked,
+        level,
+        explanation:
+          level === "High"
+            ? "Liability cap is weak or missing exclusions; exposure may be unlimited."
+            : level === "Medium"
+            ? "Termination window is shorter than common practice; consider 30 days."
+            : "Clause appears standard; ensure definitions exist elsewhere.",
+        safer:
+          level === "High"
+            ? "Vendor's aggregate liability shall not exceed fees paid in the prior twelve (12) months, excluding indemnity for IP infringement and wilful misconduct."
+            : level === "Medium"
+            ? "Either party may terminate this Agreement with thirty (30) days' prior written notice."
+            : "The parties shall protect Confidential Information using industry-standard safeguards.",
+      },
+    ]);
+    setRiskAnalysing(false);
+  };
+
+  const applySaferToDocument = (idx = 0) => {
+    const f = riskFindings[idx];
+    if (!f || !selection) return;
+    const before = original.slice(0, selection.start);
+    const after = original.slice(selection.end);
+    const next = `${before}[EDITED] ${f.safer} [/EDITED]${after}`;
+    setOriginal(next);
+  };
+
+  const saveDocument = () => {
+    const blob = new Blob([original], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "document-updated.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // translate tool
+  const [lang, setLang] = useState("Hindi");
+  const [translated, setTranslated] = useState("");
+  const [translating, setTranslating] = useState(false);
+
+  const translateSelection = async () => {
+    if (!selection) return;
+    setTranslating(true);
+    await sleep(600);
+    const chunk = original.slice(selection.start, selection.end).trim();
+    const line = `[${lang}] ${chunk || "(nothing selected)"}`;
+    setTranslated((p) => (p ? p + "\n\n" : "") + line);
+    setTranslating(false);
+  };
+
+  const translateAll = async () => {
+    setTranslating(true);
+    await sleep(800);
+    setTranslated(DEMO_TRANSLATIONS[lang]);
+    setTranslating(false);
+  };
+
+  // search tool (on demo text area)
+  const [query, setQuery] = useState("Termination clause");
+  const [results, setResults] = useState([]); // [{ snippet, page }]
+  const [hit, setHit] = useState(0);
+
+  const runSearch = () => {
+    const re = new RegExp(query, "i");
+    const lines = original.split(/\n/);
+    const hits = [];
+    lines.forEach((l, i) => re.test(l) && hits.push({ snippet: l.trim(), page: i + 1 }));
+    setResults(hits);
+    setHit(0);
+  };
+
+  // auth tool
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authReport, setAuthReport] = useState(null); // { signature, tamper, watermark, encryption, hash }
+
+  const analyseAuthenticity = async () => {
+    setAuthLoading(true);
+    await sleep(1300);
+    const report = {
+      signature: true,
+      tamper: false,
+      watermark: "Draft",
+      encryption: true,
+      hash: "SHA256: 4b227777d4dd1fc61c6f884f48641d02...",
+    };
+    setAuthReport(report);
+    setAuthLoading(false);
+    setRoute("auth-report"); // show dedicated page
+  };
+
+  const authScore = useMemo(() => {
+    if (!authReport) return 0;
+    let s = 0;
+    if (authReport.signature) s += 30;
+    if (!authReport.tamper) s += 30;
+    if (authReport.encryption) s += 25;
+    if (authReport.watermark) s += 5;
+    s += 10; // hash present
+    return Math.min(100, s);
+  }, [authReport]);
+
+  // ---------- ui pieces ----------
+  const Header = () => (
+    <div
+      className="flex items-center justify-between px-4 py-3 border-b"
+      style={{ background: THEME.sand400, color: "#1c1b17", borderColor: THEME.border }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="h-7 w-7 rounded grid place-items-center" style={{ background: "#ffffffaa" }}>
+          <Settings2 className="h-4 w-4" />
+        </div>
+        <div className="font-semibold tracking-wide">{docName}</div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() =>
+            downloadJSON("analysis-report.json", { tool: activeTool, at: new Date().toISOString() })
+          }
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium shadow"
+          style={{ background: "#fff", color: THEME.teal700 }}
+        >
+          <Download className="h-4 w-4" /> Download
+        </button>
+        <button
+          onClick={() => alert("Close pressed")}
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium"
+          style={{ background: "#ffffff22" }}
+        >
+          <X className="h-4 w-4" /> Close
+        </button>
+      </div>
+    </div>
+  );
+
+  const Sidebar = () => {
+    const Item = ({ id, label, icon: Icon }) => (
+      <button
+        onClick={() => setActiveTool(id)}
+        className={clsx(
+          "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium border",
+          activeTool === id ? "bg-white" : "bg-[rgba(255,255,255,0.6)] hover:bg-white"
+        )}
+        style={{
+          color: THEME.ink,
+          borderColor: THEME.border,
+        }}
+      >
+        <Icon className="h-4 w-4" />
+        {label}
+      </button>
+    );
+
+    return (
+      <div
+        className="flex h-full flex-col gap-2 p-3"
+        style={{ background: THEME.bg, borderRight: `1px solid ${THEME.border}` }}
+      >
+        <Item id="compare" label="Document Comparison" icon={GitCompare} />
+        <Item id="risk" label="Clause Risk Detector" icon={ShieldCheck} />
+        <Item id="translate" label="Multilingual AI Summary" icon={Languages} />
+        <Item id="search" label="Smart Search Across Doc" icon={FileSearch2} />
+        <Item id="auth" label="Document Authenticity Check" icon={ShieldCheck} />
+      </div>
+    );
+  };
+
+  // ---------- tool renders ----------
+  const ToolCompare = () => (
+    <div className="grid grid-cols-2 gap-4 h-full">
+      {/* LEFT: top and bottom pdfs */}
+      <div className="flex flex-col gap-4">
+        {/* Static PDF */}
+        <div className="rounded-lg border h-[45%] flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+          <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs" style={{ color: THEME.inkMuted }}>Left Top Version (Static PDF)</span>
+              <span className="text-[11px] italic" style={{ color: THEME.inkMuted }}>
+                Serving from <code className="font-mono">{staticPdfUrl}</code>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                className="text-xs border rounded px-2 py-1 w-56"
+                placeholder="/contract1.pdf"
+                value={staticPdfUrl}
+                onChange={(e) => setStaticPdfUrl(e.target.value)}
+                style={{ borderColor: THEME.border }}
+                title="Change the static PDF URL"
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            {staticPdfUrl ? (
+              <iframe
+                title="static-pdf"
+                src={staticPdfUrl}
+                className="w-full h-full"
+              />
+            ) : (
+              <div className="grid place-items-center h-full text-sm" style={{ color: THEME.inkMuted }}>Provide a static PDF URL above</div>
+            )}
+          </div>
+        </div>
+
+        {/* Upload & preview second PDF */}
+        <div className="rounded-lg border h-[45%] flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+          <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs" style={{ color: THEME.inkMuted }}>Left Bottom Version (Upload PDF)</span>
+            </div>
+            <label className="text-xs rounded px-2 py-1 cursor-pointer" style={{ background: THEME.sand400 }}>
+              Upload file
+              <input
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => setSecondPdfFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+              />
+            </label>
+          </div>
+          <div className="flex-1">
+            {secondPdfUrl ? (
+              <iframe title="uploaded-pdf" src={secondPdfUrl} className="w-full h-full" />
+            ) : (
+              <div className="grid place-items-center h-full text-sm" style={{ color: THEME.inkMuted }}>
+                No PDF uploaded yet.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT: result + download */}
+      <div className="rounded-lg border h-full flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+          <button
+            onClick={performCompare}
+            disabled={!staticPdfUrl || !secondPdfFile || isComparing}
+            className="inline-flex items-center gap-1 text-xs rounded px-2 py-1 disabled:opacity-60"
+            style={{ background: THEME.sand400 }}
+          >
+            {isComparing ? (
+              <span className="inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Comparing…</span>
+            ) : (
+              "Compare"
+            )}
+          </button>
+
+          <button
+            onClick={() => downloadJSON("compare-report.json", compareReport ?? { message: "No report yet" })}
+            className="inline-flex items-center gap-1 text-xs rounded px-2 py-1"
+            style={{ background: "#fff", color: THEME.teal700, border: `1px solid ${THEME.border}` }}
+          >
+            <Download className="h-3.5 w-3.5" /> Download Report
+          </button>
+        </div>
+
+        <div className="p-3 overflow-auto text-sm space-y-3">
+          {serverError && (
+            <div className="rounded border p-2" style={{ borderColor: THEME.border, color: "#b91c1c", background: "#fee2e2" }}>
+              <b>Error:</b> {serverError}
+              <div className="text-xs mt-1" style={{ color: THEME.inkMuted }}>
+                If you see a CORS error, allow <code className="font-mono">Access-Control-Allow-Origin: *</code> on your n8n webhook.
+              </div>
+            </div>
+          )}
+
+          {isComparing && (
+            <div className="flex items-center gap-2 text-[13px]" style={{ color: THEME.inkMuted }}>
+              <Loader2 className="h-4 w-4 animate-spin" /> Generating comparison…
+            </div>
+          )}
+
+          {!isComparing && (
+            <>
+              <div className="text-xs uppercase tracking-wide" style={{ color: THEME.inkMuted }}>
+                Comparison Result (from n8n)
+              </div>
+
+              {/* If we have token additions/removals, render pills */}
+              {(tokenRemovals.length > 0 || tokenAdditions.length > 0) && (
+                <div className="space-y-2">
+                  {tokenRemovals.length > 0 && (
+                    <div>
+                      <div className="text-xs mb-1" style={{ color: THEME.inkMuted }}>Removed (red):</div>
+                      <div className="flex flex-wrap gap-1">
+                        {tokenRemovals.slice(0, 120).map((w, i) => (
+                          <span key={`rem-${i}`} className="px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200 text-xs">
+                            {w}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {tokenAdditions.length > 0 && (
+                    <div>
+                      <div className="text-xs mb-1" style={{ color: THEME.inkMuted }}>Added (green):</div>
+                      <div className="flex flex-wrap gap-1">
+                        {tokenAdditions.slice(0, 120).map((w, i) => (
+                          <span key={`add-${i}`} className="px-1.5 py-0.5 rounded bg-green-100 text-green-700 border border-green-200 text-xs">
+                            {w}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Otherwise, dump whatever the server returned in a readable way */}
+              <div className="rounded border p-2" style={{ borderColor: THEME.border, background: "#fff" }}>
+                {compareReport == null ? (
+                  <div className="text-sm" style={{ color: THEME.inkMuted }}>No report yet. Click <b>Compare</b>.</div>
+                ) : typeof compareReport === "string" ? (
+                  <pre className="whitespace-pre-wrap text-sm">{compareReport}</pre>
+                ) : compareReport.html ? (
+                  <div dangerouslySetInnerHTML={{ __html: compareReport.html }} />
+                ) : (
+                  <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(compareReport, null, 2)}</pre>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const ToolRisk = () => (
+    <div className="grid grid-cols-2 gap-4 h-full">
+      {/* LEFT original with action buttons */}
+      <div className="rounded-lg border flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+          <div className="text-xs" style={{ color: THEME.inkMuted }}>Original Document</div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => applySaferToDocument(0)}
+              className="text-xs rounded px-2 py-1"
+              style={{ background: THEME.sand400 }}
+            >
+              Apply to document
+            </button>
+            <button
+              onClick={saveDocument}
+              className="text-xs rounded px-2 py-1"
+              style={{ background: THEME.sand400 }}
+            >
+              Save Document
+            </button>
+          </div>
+        </div>
+        <textarea
+          className="flex-1 p-3 outline-none text-sm"
+          value={original}
+          onChange={(e) => setOriginal(e.target.value)}
+          onMouseUp={captureSelection}
+          ref={originalRef}
+          style={{ color: THEME.ink, background: THEME.surface }}
+        />
+        {/* Hint for edited sections */}
+        <div className="px-3 py-2 text-xs" style={{ color: THEME.inkMuted }}>
+          Edited text marked between <span className="text-blue-700 font-semibold">[EDITED]</span> tags (blue).
+        </div>
+      </div>
+
+      {/* RIGHT results */}
+      <div className="rounded-lg border flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+          <div className="text-xs" style={{ color: THEME.inkMuted }}>Risk Analysis</div>
+          <button
+            onClick={analyseRisk}
+            className="text-xs rounded px-2 py-1 inline-flex items-center gap-1"
+            style={{ background: THEME.sand400 }}
+          >
+            {riskAnalysing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+            Analyse
+          </button>
+        </div>
+        <div className="p-3 space-y-3 overflow-auto text-sm">
+          {!selection && (
+            <div className="text-[13px]" style={{ color: THEME.inkMuted }}>
+              Select a clause in the left document, then click <b>Analyse</b>.
+            </div>
+          )}
+          {riskAnalysing && (
+            <div className="flex items-center gap-2 text-[13px]" style={{ color: THEME.inkMuted }}>
+              <Loader2 className="h-4 w-4 animate-spin" /> Evaluating risk…
+            </div>
+          )}
+          {riskFindings.map((f, i) => (
+            <div key={i} className="rounded border p-3 space-y-2" style={{ borderColor: THEME.border }}>
+              <div className="flex items-center justify-between">
+                <span className={clsx("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium", riskPill(f.level))}>
+                  {f.level === "High" ? <XCircle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                  {f.level}
+                </span>
+                <span className="text-xs" style={{ color: THEME.inkMuted }}>Risk Score: {f.level === "High" ? "High" : f.level === "Medium" ? "Medium" : "Low"}</span>
+              </div>
+              <div>
+                <div className="text-xs mb-1" style={{ color: THEME.inkMuted }}>Clause</div>
+                <pre className="whitespace-pre-wrap rounded bg-[rgba(218,229,224,0.4)] p-2 text-[13px]" style={{ border: `1px dashed ${THEME.mint300}`, color: THEME.ink }}>
+{f.clause}
+                </pre>
+              </div>
+              <div>
+                <div className="text-xs mb-1" style={{ color: THEME.inkMuted }}>AI Explanation</div>
+                <p className="text-[13px]">{f.explanation}</p>
+              </div>
+              <div>
+                <div className="text-xs mb-1" style={{ color: THEME.inkMuted }}>Example safer clause</div>
+                <pre className="whitespace-pre-wrap rounded border p-2 text-[13px]" style={{ borderColor: THEME.border, background: "#fff" }}>
+{f.safer}
+                </pre>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const ToolTranslate = () => (
+    <div className="grid grid-cols-2 gap-4 h-full">
+      <div className="rounded-lg border flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+          <div className="text-xs" style={{ color: THEME.inkMuted }}>Original (select any text)</div>
+          <div className="flex items-center gap-2">
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value)}
+              className="text-xs border rounded px-2 py-1"
+              style={{ borderColor: THEME.border }}
+            >
+              {Object.keys(DEMO_TRANSLATIONS).map((l) => (
+                <option key={l}>{l}</option>
+              ))}
+            </select>
+            <button
+              onClick={translateAll}
+              className="text-xs rounded px-2 py-1 inline-flex items-center gap-1"
+              style={{ background: THEME.sand400 }}
+            >
+              {translating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
+              Translate document
+            </button>
+          </div>
+        </div>
+        <div className="relative flex-1">
+          {selection && (
+            <button
+              onClick={translateSelection}
+              className="absolute z-10 right-3 top-3 text-xs rounded px-2 py-1 shadow"
+              style={{ background: THEME.mint200, color: THEME.teal700, border: `1px solid ${THEME.border}` }}
+              title="Translate selected text"
+            >
+              Translate → {lang}
+            </button>
+          )}
+          <textarea
+            className="absolute inset-0 p-3 outline-none text-sm rounded-b-lg"
+            value={original}
+            onChange={(e) => setOriginal(e.target.value)}
+            onMouseUp={captureSelection}
+            ref={originalRef}
+            style={{ color: THEME.ink, background: THEME.surface }}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-lg border flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="px-3 py-2 border-b text-xs" style={{ borderColor: THEME.border, color: THEME.inkMuted }}>
+          {lang} Translation
+        </div>
+        <div className="p-3 text-sm whitespace-pre-wrap">{translated || "— Translations will appear here —"}</div>
+      </div>
+    </div>
+  );
+
+  const ToolSearch = () => (
+    <div className="grid grid-cols-2 gap-4 h-full">
+      <div className="rounded-lg border flex flex-col" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+          <div className="relative flex-1">
+            <Search className="h-4 w-4 absolute left-2 top-2.5" style={{ color: THEME.neutral500 }} />
+            <input
+              className="w-full pl-8 pr-20 py-2 rounded border text-sm"
+              placeholder='Search: "Termination clause"'
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ borderColor: THEME.border }}
+            />
+            <div className="absolute right-1 top-1 flex items-center gap-1">
+              <button
+                onClick={() => { setHit((h) => Math.max(0, h - 1)); }}
+                className="p-1 rounded border"
+                style={{ borderColor: THEME.border }}
+                title="Prev"
+              >
+                <ChevronUp className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => { setHit((h) => Math.min(results.length - 1, h + 1)); }}
+                className="p-1 rounded border"
+                style={{ borderColor: THEME.border }}
+                title="Next"
+              >
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={runSearch}
+            className="text-xs rounded px-2 py-1"
+            style={{ background: THEME.sand400 }}
+          >
+            Search
+          </button>
+        </div>
+
+        <textarea
+          className="flex-1 p-3 outline-none text-sm"
+          value={original}
+          onChange={(e) => setOriginal(e.target.value)}
+          style={{ background: THEME.surface, color: THEME.ink }}
+        />
+      </div>
+
+      <div className="rounded-lg border flex flex-col overflow-hidden" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="px-3 py-2 border-b text-xs" style={{ borderColor: THEME.border, color: THEME.inkMuted }}>
+          Results
+        </div>
+        <div className="p-3 space-y-2 text-sm overflow-auto">
+          {results.length === 0 ? (
+            <div style={{ color: THEME.inkMuted }}>No results found</div>
+          ) : (
+            results.map((r, i) => (
+              <div key={i} className="rounded border p-2 flex items-center justify-between" style={{ borderColor: THEME.border }}>
+                <div>
+                  <div className="text-xs" style={{ color: THEME.inkMuted }}>
+                    Found in: Clause {r.page} | Page {r.page}
+                  </div>
+                  <div className="mt-1">{r.snippet}</div>
+                </div>
+                <button
+                  className="text-xs rounded px-2 py-1"
+                  style={{ background: THEME.mint200, color: THEME.teal700, border: `1px solid ${THEME.border}` }}
+                  onClick={() => setHit(i)}
+                >
+                  View in Document
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const ToolAuth = () => (
+    <div className="h-full rounded-lg border relative overflow-hidden" style={{ borderColor: THEME.border, background: THEME.surface }}>
+      <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: THEME.border }}>
+        <div className="text-sm" style={{ color: THEME.ink }}>Document Authenticity Checker</div>
+        <button
+          onClick={analyseAuthenticity}
+          className="text-xs rounded px-2 py-1 inline-flex items-center gap-1"
+          style={{ background: THEME.sand400 }}
+        >
+          {authLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+          Analyse
+        </button>
+      </div>
+
+      <div className="absolute inset-0 p-6">
+        {/* Scanning animation */}
+        <AnimatePresence>
+          {authLoading && (
+            <motion.div
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                background:
+                  "repeating-linear-gradient(0deg, rgba(207,230,218,0.35) 0px, rgba(207,230,218,0.35) 6px, transparent 6px, transparent 12px)",
+              }}
+            >
+              <motion.div
+                className="absolute left-0 right-0 h-24"
+                initial={{ top: "-6rem" }}
+                animate={{ top: "100%" }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
+                style={{ background: "linear-gradient(180deg, transparent, rgba(218,229,224,0.8), transparent)" }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!authLoading && (
+          <div className="h-full grid place-items-center text-sm" style={{ color: THEME.inkMuted }}>
+            Click <b>Analyse</b> to scan signature, tampering, watermark & encryption.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const AuthReportPage = () => (
+    <div className="h-full flex flex-col" style={{ background: THEME.bg }}>
+      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: THEME.border, background: THEME.surface }}>
+        <div className="flex items-center gap-2">
+          <button
+            className="rounded border p-1"
+            style={{ borderColor: THEME.border }}
+            onClick={() => setRoute("workspace")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="font-semibold">Authenticity Report</div>
+        </div>
+        <div className="text-sm font-medium">
+          Score:{" "}
+          <span className="px-2 py-0.5 rounded" style={{ background: THEME.mint200, color: THEME.teal700 }}>
+            {authScore}%
+          </span>
+        </div>
+      </div>
+      <div className="p-6 grid gap-4 md:grid-cols-2">
+        <ReportCard
+          label="Digital Signature Verified"
+          ok={!!authReport?.signature}
+          hint="Certificate chain and signer identity validated."
+        />
+        <ReportCard
+          label="Tamper detection"
+          ok={!authReport?.tamper}
+          hint="No anomalies in byte-range checks."
+        />
+        <ReportCard
+          label="Watermark found"
+          ok={!!authReport?.watermark}
+          value={authReport?.watermark || "None"}
+          hint="Embedded watermark layer."
+        />
+        <ReportCard
+          label="Encryption & hash metadata"
+          ok={!!authReport?.encryption}
+          value={authReport?.hash || "—"}
+          hint="AES-256 + SHA-256 digest"
+        />
+      </div>
+    </div>
+  );
+
+  const BottomStrip = () => (
+    <div
+      className="border-t"
+      style={{ borderColor: THEME.border, background: THEME.surface }}
+    >
+      <div className="flex items-center justify-between px-3 py-2">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setBottomTab("assistant")}
+            className={clsx(
+              "text-xs px-2 py-1 rounded border",
+              bottomTab === "assistant" ? "bg-white" : ""
+            )}
+            style={{ borderColor: THEME.border }}
+          >
+            AI Persona
+          </button>
+          <button
+            onClick={() => setBottomTab("insights")}
+            className={clsx(
+              "text-xs px-2 py-1 rounded border",
+              bottomTab === "insights" ? "bg-white" : ""
+            )}
+            style={{ borderColor: THEME.border }}
+          >
+            Quick Insights
+          </button>
+        </div>
+        <button
+          onClick={() => setBottomOpen((v) => !v)}
+          className="text-xs rounded px-2 py-1"
+          style={{ background: THEME.sand400 }}
+        >
+          {bottomOpen ? "Hide" : "Show"}
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {bottomOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 180, opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="h-[180px] p-3 text-sm" style={{ color: THEME.ink }}>
+              {bottomTab === "assistant" ? (
+                <div className="space-y-2">
+                  <div className="text-xs" style={{ color: THEME.inkMuted }}>
+                    Assistant
+                  </div>
+                  <div className="rounded border p-2" style={{ borderColor: THEME.border }}>
+                    How can I help? Try: “Summarize Section 7 in 3 bullet points.”
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-xs" style={{ color: THEME.inkMuted }}>
+                    Quick Insights
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Risk hot-spot near “Liability” (Section 10.3).</li>
+                    <li>Shorter termination period detected in comparison (15 vs 30 days).</li>
+                    <li>Document signed and encrypted; watermark “Draft”.</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  // ---------- layout ----------
+  if (route === "auth-report") {
+    return (
+      <div className="h-screen w-full" style={{ background: THEME.bg, color: THEME.ink }}>
+        <Header />
+        <AuthReportPage />
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen w-full flex flex-col" style={{ background: THEME.bg, color: THEME.ink }}>
+      {/* Top header */}
+      <Header />
+
+      {/* body: left sidebar + main view */}
+      <div className="flex-1 grid" style={{ gridTemplateColumns: "280px 1fr" }}>
+        <Sidebar />
+        <div className="h-full p-4">
+          <div className="h-[calc(100%-180px)]">
+            {activeTool === "compare" && <ToolCompare />}
+            {activeTool === "risk" && <ToolRisk />}
+            {activeTool === "translate" && <ToolTranslate />}
+            {activeTool === "search" && <ToolSearch />}
+            {activeTool === "auth" && <ToolAuth />}
+          </div>
+          <BottomStrip />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- helpers ----------
+function downloadJSON(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function ReportCard({ label, ok, hint, value }) {
+  return (
+    <div className="rounded border p-4 space-y-2" style={{ borderColor: THEME.border, background: THEME.surface }}>
+      <div className="flex items-center justify-between">
+        <div className="font-medium">{label}</div>
+        <span
+          className={clsx(
+            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
+            ok ? "bg-green-100 text-green-700 border-green-300" : "bg-red-100 text-red-700 border-red-300"
+          )}
+        >
+          {ok ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+          {ok ? "Verified" : "Not found"}
+        </span>
+      </div>
+      {value && <div className="text-sm">{value}</div>}
+      {hint && <div className="text-xs" style={{ color: THEME.inkMuted }}>{hint}</div>}
+    </div>
+  );
+}
