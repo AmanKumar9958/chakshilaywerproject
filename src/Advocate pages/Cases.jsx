@@ -379,7 +379,7 @@ const Cases = () => {
                   borderColor: statusStyle.border
                 }}
               >
-                {caseItem.status.toUpperCase()}
+                {(caseItem.status || '').toUpperCase()}
               </span>
               <div 
                 className="w-2 h-2 rounded-full"
@@ -481,7 +481,7 @@ const Cases = () => {
   };
 
   return (
-    <div className="min-h-screen ml-72" style={{background: colors.cream}}>
+    <div className="min-h-screen ml-60" style={{background: colors.cream}}>
       {/* Header */}
       <div className="sticky top-0 z-30 p-6" style={{
         background: `linear-gradient(135deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.10))`,

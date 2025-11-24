@@ -180,7 +180,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen lg:ml-60 pt-16 lg:pt-0" style={{ backgroundColor: colors.primary.cream }}>
+      <div className="min-h-screen lg:ml-60 lg:pt-0" style={{ backgroundColor: colors.primary.cream }}>
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: colors.primary.gold }}></div>
@@ -193,7 +193,7 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen lg:ml-60 pt-16 lg:pt-0" style={{ backgroundColor: colors.primary.cream }}>
+      <div className="min-h-screen lg:ml-60  lg:pt-0" style={{ backgroundColor: colors.primary.cream }}>
         <div className="flex items-center justify-center h-screen">
           <div className="text-center max-w-md">
             <div className="text-red-500 text-5xl mb-4">⚠️</div>
@@ -217,8 +217,8 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen lg:ml-60 pt-16 lg:pt-0" style={{ backgroundColor: colors.primary.cream }}>
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
+    <div className="min-h-screen w-full lg:ml-60" style={{ backgroundColor: colors.primary.cream }}>
+    <div className="w-full p-4 md:p-6">
         
         {/* Header Section */}
         <div 

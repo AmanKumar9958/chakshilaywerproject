@@ -417,7 +417,7 @@ const navigate = useNavigate();
   };
 
   return (
-    <div className="min-h-screen ml-72" style={{ background: colors.cream }}>
+    <div className="min-h-screen ml-60" style={{ background: colors.cream }}>
       {/* Header */}
       <header className="border-b p-4 sm:p-6" style={{
         background: `rgba(255, 255, 255, 0.03)`,

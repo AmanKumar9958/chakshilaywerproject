@@ -116,11 +116,13 @@ const Navbar = ({ collapsed, setCollapsed }) => {
       )}
 
       {/* Sidebar */}
-      <div
-        className={`fixed left-0 top-0 h-full w-60 z-50 transform transition-transform duration-300
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-        style={sidebarStyle}
-      >
+     <div
+  className="fixed left-0 top-0 h-full w-60 z-50"
+  style={{
+    ...sidebarStyle,
+    marginRight: '-1px'        // pull the page 1 px left
+  }}
+>
 
         {/* Logo/Brand */}
         <div className="p-6 border-b border-[rgba(182,157,116,0.3)] select-none">
@@ -179,15 +181,15 @@ const Navbar = ({ collapsed, setCollapsed }) => {
           })}
 
           {/* Tools Dropdown */}
-          <button
+          {/* <button
             onClick={() => setToolsExpanded(!toolsExpanded)}
             className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#6b7280] rounded transition-colors"
             style={{ background: 'transparent' }}
           >
             <span>Tools</span>
             <FiChevronDown className={`w-4 h-4 transition-transform ${toolsExpanded ? 'rotate-180' : ''}`} />
-          </button>
-          {toolsExpanded && toolItems.map(item => {
+          </button> */}
+          {/* {toolsExpanded && toolItems.map(item => {
             const Icon = item.icon;
             const isActive = activeNavItem === item.id;
             return (
@@ -211,7 +213,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
                 <span className="flex-1 text-left">{item.label}</span>
               </button>
             );
-          })}
+          })} */}
         </div>
         
         {/* Bottom Actions */}

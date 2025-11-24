@@ -356,7 +356,7 @@ const MyDocuments = () => {
 
   return (
     // FIXED: Updated container classes for sidebar layout
-    <div className="min-h-screen lg:ml-72 lg:pl-4" style={{ background: colors.cream }}>
+    <div className="min-h-screen lg:ml-60 lg:pl-4" style={{ background: colors.cream }}>
 
       {/* Header */}
       <header className="border-b py-3" style={{

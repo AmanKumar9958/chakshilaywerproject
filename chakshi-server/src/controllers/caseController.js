@@ -32,17 +32,25 @@ export const updateCase = async (req, res) => {
   }
 };
 
-// 📖 Get All Cases
+// 📖 Get All Cases with optional filtering query params
 export const getCases = async (req, res) => {
   try {
-    const cases = await Case.find().sort({ createdDate: -1 });
+    const { clientName, status, caseType, caseNumber } = req.query;
+    const filter = {};
+
+    if (clientName) filter.clientName = clientName;
+    if (status) filter.status = status;
+    if (caseType) filter.caseType = caseType;
+    if (caseNumber) filter.caseNumber = caseNumber;
+
+    const cases = await Case.find(filter).sort({ createdDate: -1 });
     res.json({ success: true, data: cases });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// 🔍 Get Single Case
+// 🔍 Get Single Case by ID
 export const getCaseById = async (req, res) => {
   try {
     const found = await Case.findById(req.params.id);

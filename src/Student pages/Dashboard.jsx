@@ -523,7 +523,7 @@ function ChakshiDashboard() {
   }, [docs, assignments]);
 
   return (
-    <div className="min-h-screen lg:ml-72 lg:pl-4 bg-gradient-to-br from-amber-50 via-white to-stone-50">
+    <div className="min-h-screen lg:ml-60 lg:pl-4 bg-gradient-to-br from-amber-50 via-white to-stone-50">
       {/* Header */}
       <header className="bg-white border-b border-stone-200 sticky top-0 z-10 shadow-sm">
         <div className="flex items-center justify-between p-6">
@@ -532,10 +532,10 @@ function ChakshiDashboard() {
             <h1 className="text-2xl font-bold text-gray-800">Welcome back, {studentName}! 👋</h1>
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition">
+            {/* <button className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition">
               <Bell size={22} />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
+            </button> */}
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
               <div className="text-right">
                 <p className="text-sm font-semibold text-gray-800">{studentName}</p>

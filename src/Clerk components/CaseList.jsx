@@ -363,7 +363,10 @@ const CaseList = () => {
   // ==================== MAIN RENDER ====================
 
   return (
-    <div className="min-h-screen bg-[#f5f5ef] lg:ml-60 pt-16 lg:pt-0">
+     <div
+    className="min-h-screen w-full lg:ml-60 pt-16 lg:pt-0"
+    style={{ background: '#f5f5ef', display: 'flex', flexDirection: 'column' }}
+  >
       <div className="w-full px-4 md:px-6 lg:px-8 py-4 md:py-6 space-y-6">
         
         {/* ==================== HEADER ==================== */}

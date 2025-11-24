@@ -149,9 +149,7 @@ router.post('/', (req, res, next) => {
   });
 });
 
-// Middleware 3: Main upload handler
-// Middleware 3: Main upload handler
-// Middleware 3: Main upload handler
+// Middleware 3: Main upload handler with try-catch and fallback
 router.post('/', async (req, res) => {
   try {
     console.log('\n🔍 POST-MULTER PROCESSING');
@@ -184,47 +182,78 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Validation: At least one case reference required
-    if (!linkedCase && !linkedCaseNumber) {
-      console.error('❌ Validation failed: No case reference');
+    // Validation: Required fields
+    if (!name || !category) {
+      console.error('❌ Validation failed: Missing required fields');
       return res.status(400).json({
         success: false,
-        message: 'Either linkedCase or linkedCaseNumber is required'
+        message: 'Name and category are required fields'
       });
     }
 
     console.log('✅ All validations passed');
 
-    // Resolve case references
-    let caseObjectId = linkedCase;
-    let caseNumber = linkedCaseNumber;
+    // ✅ FIXED: Resolve case references with try-catch and fallback
+    let caseObjectId = null;
+    let caseNumber = null;
 
-    if (linkedCaseNumber && !linkedCase) {
+    // If linkedCaseNumber is provided, look it up by case number (STRING)
+    if (linkedCaseNumber && linkedCaseNumber.trim() !== '') {
       console.log('🔍 Looking up case by caseNumber:', linkedCaseNumber);
-      const caseDoc = await Case.findOne({ caseNumber: linkedCaseNumber });
-      if (caseDoc) {
-        caseObjectId = caseDoc._id;
-        console.log('   ✅ Found case ObjectId:', caseObjectId);
-      } else {
-        console.log('   ⚠️ Case not found');
+      
+      try {
+        const caseDoc = await Case.findOne({ caseNumber: linkedCaseNumber });
+        
+        if (caseDoc) {
+          caseObjectId = caseDoc._id;
+          caseNumber = caseDoc.caseNumber;
+          console.log('   ✅ Case found:');
+          console.log('      └─ ObjectId:', caseObjectId);
+          console.log('      └─ Case Number:', caseNumber);
+        } else {
+          console.log('   ⚠️ Case not found in database');
+          console.log('   ℹ️ Using provided case number as fallback');
+          caseNumber = linkedCaseNumber; // Fallback: use input
+        }
+      } catch (error) {
+        console.log('   ⚠️ Error looking up case:', error.message);
+        console.log('   ℹ️ Using provided case number as fallback');
+        caseNumber = linkedCaseNumber; // Fallback: use input
       }
     }
 
-    if (linkedCase && !linkedCaseNumber) {
-      console.log('🔍 Looking up caseNumber by ObjectId:', linkedCase);
-      const caseDoc = await Case.findById(linkedCase);
-      if (caseDoc) {
-        caseNumber = caseDoc.caseNumber;
-        console.log('   ✅ Found caseNumber:', caseNumber);
-      } else {
-        console.log('   ⚠️ Case not found');
+    // If linkedCase ObjectId is provided (alternative lookup)
+    if (linkedCase && linkedCase.trim() !== '' && !linkedCaseNumber) {
+      console.log('🔍 Looking up case by ObjectId:', linkedCase);
+      
+      try {
+        // Validate if it's a valid ObjectId format
+        const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+        if (objectIdRegex.test(linkedCase)) {
+          const caseDoc = await Case.findById(linkedCase);
+          
+          if (caseDoc) {
+            caseObjectId = caseDoc._id;
+            caseNumber = caseDoc.caseNumber;
+            console.log('   ✅ Case found:');
+            console.log('      └─ ObjectId:', caseObjectId);
+            console.log('      └─ Case Number:', caseNumber);
+          } else {
+            console.log('   ⚠️ Case not found');
+          }
+        } else {
+          console.log('   ⚠️ Invalid ObjectId format, treating as case number');
+          caseNumber = linkedCase; // Fallback: treat as case number
+        }
+      } catch (error) {
+        console.log('   ⚠️ Error looking up case:', error.message);
+        caseNumber = linkedCase; // Fallback: use input
       }
     }
 
     // ⭐ Validate linkedClient - check if it's a valid ObjectId
     let clientObjectId = null;
     if (linkedClient && linkedClient.trim() !== '') {
-      // Check if it's a valid 24-character hex ObjectId
       const objectIdRegex = /^[0-9a-fA-F]{24}$/;
       if (objectIdRegex.test(linkedClient)) {
         clientObjectId = linkedClient;
@@ -233,7 +262,6 @@ router.post('/', async (req, res) => {
         console.log('⚠️ linkedClient is not a valid ObjectId, setting to null');
         console.log('   Received value:', linkedClient);
         console.log('   Expected format: 24 character hex string');
-        clientObjectId = null;
       }
     } else {
       console.log('ℹ️ No linkedClient provided');
@@ -246,8 +274,8 @@ router.post('/', async (req, res) => {
       fileType: req.file.mimetype,
       size: `${(req.file.size / 1024).toFixed(2)} KB`,
       category,
-      linkedCase: caseObjectId || null,
-      linkedCaseNumber: caseNumber || null,
+      linkedCase: caseObjectId,
+      linkedCaseNumber: caseNumber,
       linkedClient: clientObjectId,
       description: description || '',
       uploadedBy: 'Current User',
@@ -258,6 +286,7 @@ router.post('/', async (req, res) => {
       name: documentData.name,
       category: documentData.category,
       linkedCaseNumber: documentData.linkedCaseNumber,
+      linkedCase: documentData.linkedCase,
       linkedClient: documentData.linkedClient || 'null'
     }, null, 2));
     
@@ -266,7 +295,7 @@ router.post('/', async (req, res) => {
     console.log('\n✅✅✅ SUCCESS! ✅✅✅');
     console.log('Document ID:', newDoc._id);
     console.log('File saved at:', newDoc.filePath);
-    console.log('Linked to case:', newDoc.linkedCaseNumber);
+    console.log('Linked to case:', newDoc.linkedCaseNumber || 'None');
     console.log('Linked to client:', newDoc.linkedClient || 'None');
     console.log('╚═══════════════════════════════════════════════════╝\n');
 
@@ -284,14 +313,24 @@ router.post('/', async (req, res) => {
     console.error('Stack:', err.stack);
     console.error('╚═══════════════════════════════════════════════════╝\n');
     
+    // Clean up uploaded file if document creation fails
+    if (req.file && req.file.path) {
+      try {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+          console.log('🗑️ Cleaned up uploaded file after error');
+        }
+      } catch (cleanupError) {
+        console.error('⚠️ Failed to clean up file:', cleanupError.message);
+      }
+    }
+    
     res.status(500).json({ 
       success: false, 
       message: err.message 
     });
   }
 });
-
-
 
 // ═══════════════════════════════════════════════════════════════
 // 📚 GET ALL DOCUMENTS
@@ -300,7 +339,16 @@ router.get('/', async (req, res) => {
   try {
     console.log('\n📚 GET ALL DOCUMENTS');
     
-    const docs = await Document.find()
+    const { client, category, linkedCase } = req.query;
+    
+    const filter = {};
+    if (client) filter.linkedClient = client;
+    if (category) filter.category = category;
+    if (linkedCase) filter.linkedCaseNumber = linkedCase;
+
+    console.log('Filter:', JSON.stringify(filter));
+    
+    const docs = await Document.find(filter)
       .sort({ uploadDate: -1 })
       .populate('linkedCase')
       .populate('linkedClient');
@@ -309,8 +357,12 @@ router.get('/', async (req, res) => {
     
     res.json({ success: true, count: docs.length, data: docs });
   } catch (err) {
-    console.error('❌ Error:', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    console.error('❌ Error fetching documents:', err.message);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch documents',
+      error: err.message 
+    });
   }
 });
 
@@ -339,7 +391,11 @@ router.get('/case/:caseNumber', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error:', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch documents by case number',
+      error: err.message 
+    });
   }
 });
 
@@ -367,7 +423,11 @@ router.get('/case-id/:caseId', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error:', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch documents by case ID',
+      error: err.message 
+    });
   }
 });
 
@@ -394,7 +454,48 @@ router.get('/:id', async (req, res) => {
     res.json({ success: true, data: doc });
   } catch (err) {
     console.error('❌ Error:', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch document',
+      error: err.message 
+    });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 📥 DOWNLOAD DOCUMENT
+// ═══════════════════════════════════════════════════════════════
+router.get('/:id/download', async (req, res) => {
+  try {
+    console.log('\n📥 DOWNLOAD DOCUMENT:', req.params.id);
+    
+    const doc = await Document.findById(req.params.id);
+    
+    if (!doc) {
+      console.log('❌ Document not found\n');
+      return res.status(404).json({
+        success: false,
+        message: 'Document not found'
+      });
+    }
+
+    if (!fs.existsSync(doc.filePath)) {
+      console.log('❌ File not found on disk\n');
+      return res.status(404).json({
+        success: false,
+        message: 'File not found on server'
+      });
+    }
+
+    console.log('✅ Sending file:', doc.name);
+    res.download(doc.filePath, doc.name);
+  } catch (err) {
+    console.error('❌ Error:', err.message);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to download document',
+      error: err.message 
+    });
   }
 });
 
@@ -429,7 +530,11 @@ router.put('/:id', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error:', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to update document',
+      error: err.message 
+    });
   }
 });
 
@@ -452,8 +557,12 @@ router.delete('/:id', async (req, res) => {
 
     // Delete file from filesystem
     if (doc.filePath && fs.existsSync(doc.filePath)) {
-      fs.unlinkSync(doc.filePath);
-      console.log('✅ File deleted from disk');
+      try {
+        fs.unlinkSync(doc.filePath);
+        console.log('✅ File deleted from disk');
+      } catch (fileError) {
+        console.log('⚠️ Failed to delete file from disk:', fileError.message);
+      }
     }
 
     console.log('✅ Deleted successfully\n');
@@ -463,7 +572,11 @@ router.delete('/:id', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error:', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to delete document',
+      error: err.message 
+    });
   }
 });
 
@@ -497,7 +610,11 @@ router.get('/stats/overview', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error:', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch statistics',
+      error: err.message 
+    });
   }
 });
 
@@ -505,10 +622,11 @@ console.log('\n✅ ════════════════════�
 console.log('✅ Document Routes Configured Successfully');
 console.log('✅ ═══════════════════════════════════════════════════');
 console.log('   POST   /               - Upload (field: "file")');
-console.log('   GET    /               - Get all');
+console.log('   GET    /               - Get all (with filters)');
 console.log('   GET    /case/:num      - Get by case number');
 console.log('   GET    /case-id/:id    - Get by case ObjectId');
 console.log('   GET    /:id            - Get single');
+console.log('   GET    /:id/download   - Download file');
 console.log('   PUT    /:id            - Update');
 console.log('   DELETE /:id            - Delete');
 console.log('   GET    /stats/overview - Statistics');

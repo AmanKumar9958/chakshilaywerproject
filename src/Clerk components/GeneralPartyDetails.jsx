@@ -302,7 +302,10 @@ const GeneralPartyDetails = () => {
   };
 
   return (
-    <div className="min-h-screen pt-16 p-4" style={{ backgroundColor: colors.cream }}>
+   <div
+    className="min-h-screen w-full lg:ml-60 pt-16 lg:pt-0"
+    style={{ background: '#f5f5ef', display: 'flex', flexDirection: 'column' }}
+  >
       {/* Parties Directory Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold" style={{ color: colors.navy }}>

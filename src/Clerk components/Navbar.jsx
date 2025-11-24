@@ -64,7 +64,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
   ];
 
   const toolItems = [
-    { id: 'help', label: 'Help & Support', icon: FiSearch, path: '/clerk/help' }
+    { id: 'help', label: 'Settings', icon: FiSearch, path: '/clerk/help' }
   ];
 
   // Mock notifications
@@ -266,12 +266,12 @@ const Navbar = ({ collapsed, setCollapsed }) => {
 
           {/* Settings Section */}
           <div>
-            <p
+            {/* <p
               className="px-4 mb-3 text-xs font-bold uppercase tracking-wider"
               style={{ color: colors.gray }}
             >
               Settings
-            </p>
+            </p> */}
             {toolItems.map(item => (
               <SidebarNavItem key={item.id} item={item} />
             ))}
@@ -284,7 +284,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
           style={{ borderColor: colors.gold15 }}
         >
           {/* Online Status */}
-          <div
+          {/* <div
             className="flex items-center mb-3 px-3 py-2 rounded-lg"
             style={{ backgroundColor: colors.gold05 }}
           >
@@ -301,7 +301,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             >
               {isOnline ? 'Online' : 'Offline'}
             </span>
-          </div>
+          </div> */}
 
           {/* Notifications */}
           <div className="relative mb-3" ref={notificationRef}>

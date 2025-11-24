@@ -258,7 +258,7 @@ const AnalyticsDashboard = () => {
 
   return (
     <div 
-      className="min-h-screen ml-72" 
+      className="min-h-screen ml-60" 
       style={{background: colors.cream}}
     >
       {/* Mobile Menu Overlay */}
@@ -336,11 +336,11 @@ const AnalyticsDashboard = () => {
                     <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: colors.golden }} />
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={`text-xs font-semibold`} style={{
+                    {/* <span className={`text-xs font-semibold`} style={{
                       color: stat.change > 0 ? colors.green : colors.red
                     }}>
                       {stat.change > 0 ? '+' : ''}{stat.change}%
-                    </span>
+                    </span> */}
                   </div>
                 </div>
                 
