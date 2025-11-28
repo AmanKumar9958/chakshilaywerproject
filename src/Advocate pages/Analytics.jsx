@@ -68,7 +68,8 @@ const AnalyticsDashboard = () => {
   };
 
   // API Configuration
-  const API_BASE_URL = 'http://localhost:4000/api';
+  const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api`;
+
 
   // State Management
   const [caseData, setCaseData] = useState([]);
@@ -83,40 +84,8 @@ const AnalyticsDashboard = () => {
   
   // Client data
   const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: 'Rajesh Kumar Sharma',
-      company: 'Sharma Industries Pvt Ltd',
-      email: 'rajesh.sharma@sharmaindustries.com',
-      phone: '+91 98765 43210',
-      status: 'Active',
-      type: 'Corporate',
-      rating: 5,
-      totalCases: 8,
-      activeCases: 3,
-      totalBilled: 1250000,
-      outstandingDues: 85000,
-      lastContact: '2024-10-08',
-      joinDate: '2022-03-15',
-      avatar: null
-    },
-    {
-      id: 2,
-      name: 'Dr. Priya Malhotra',
-      company: 'Independent Professional',
-      email: 'dr.priya.malhotra@healthcare.com',
-      phone: '+91 87654 32109',
-      status: 'Active',
-      type: 'Individual',
-      rating: 4,
-      totalCases: 3,
-      activeCases: 1,
-      totalBilled: 450000,
-      outstandingDues: 25000,
-      lastContact: '2024-10-07',
-      joinDate: '2023-01-10',
-      avatar: null
-    },
+   
+    
     {
       id: 3,
       name: 'Amit Agarwal',
@@ -284,7 +253,7 @@ const AnalyticsDashboard = () => {
                 </h1>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                {/* <button
                   onClick={() => setShowClientsSection(!showClientsSection)}
                   className="px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-medium transition-all text-sm"
                   style={{
@@ -297,7 +266,7 @@ const AnalyticsDashboard = () => {
                 >
                   <Users className="w-4 h-4 sm:mr-2 inline" />
                   <span className="hidden sm:inline">View Clients</span>
-                </button>
+                </button> */}
                 <button
                   onClick={() => setShowNewClientModal(true)}
                   className="px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-medium transition-colors text-sm"

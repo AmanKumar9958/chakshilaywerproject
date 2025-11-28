@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from "./components/Navbar";
 import AdvocateNavbar from "./Advocate components/Navbar";
 import AdvocateSidebar from "./Advocate components/Sidebar";
-import DocumentAnalysisWorkspace from "./Advocate pages/DocumentsComparison";
+// import DocumentAnalysisWorkspace from "./Advocate pages/DocumentsComparison";
 
 import StudentLayout from "./Student components/Layout";
 import ClerkLayout from "./Clerk components/Layout";
@@ -34,10 +34,10 @@ import Simulation from "./Advocate pages/Simulation";
 import StudentDashboard from "./Student pages/Dashboard";
 import Courses from "./Student pages/Courses";
 import Assignments from "./Student pages/Assignments";
-import Library from "./Student pages/Library";
+// import Library from "./Student pages/Library";
 import Calendar from "./Student pages/Calendar";
-import Career from "./Student pages/Career-simple";
-import ExamPrep from "./Student pages/ExamPrep";
+// import Career from "./Student pages/Career-simple";
+// import ExamPrep from "./Student pages/ExamPrep";
 import StudentResearch from "./Student pages/Research";
 import StudentNotifications from "./Student pages/Notifications";
 import StudentAllFeatures from "./Student pages/AllFeatures";
@@ -268,7 +268,7 @@ function AppContent() {
           <Route path="contractcomparison" element={<ContractComparison />} />
       
           <Route path="documents" element={<Documents />} />
-            <Route path="document-analysis" element={<DocumentAnalysisWorkspace />} />
+            {/* <Route path="document-analysis" element={<DocumentAnalysisWorkspace />} /> */}
           <Route path="integrations" element={<Integrations />} />
           {/* <Route path="research" element={<Research />} /> */}
           <Route path="settings" element={<Settings />} />
@@ -288,10 +288,10 @@ function AppContent() {
           <Route path="courses" element={<Courses />} />
           <Route path="assignments" element={<Assignments />} />
           <Route path="document-analysis" element={<DocumentAnalysis />} />
-          <Route path="library" element={<Library />} />
+          {/* <Route path="library" element={<Library />} /> */}
           <Route path="calendar" element={<Calendar />} />
-          <Route path="career" element={<Career />} />
-          <Route path="examprep" element={<ExamPrep />} />
+          {/* <Route path="career" element={<Career />} /> */}
+          {/* <Route path="examprep" element={<ExamPrep />} /> */}
           <Route path="research" element={<StudentResearch />} />
           <Route path="notifications" element={<StudentNotifications />} />
           <Route path="all-features" element={<StudentAllFeatures />} />

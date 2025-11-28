@@ -75,7 +75,7 @@ const navigate = useNavigate();
     data.append('linkedClient', formData.linkedClient);
 
     try {
-      const res = await axios.post('http://localhost:4000/api/documents', data, {
+      const res = await axios.post('${API_BASE_URL}/api/documents', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (p) => setUploadProgress(Math.round((p.loaded * 100) / p.total))
       });
@@ -112,7 +112,7 @@ const navigate = useNavigate();
   };
 
   // Enhanced document data with Indian legal categories
-
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
 
   // Enhanced filter logic
   const filteredDocuments = documents.filter(doc => {
@@ -157,12 +157,12 @@ const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch cases
-    axios.get('http://localhost:4000/api/cases')
+    axios.get('${API_BASE_URL}/api/cases')
       .then(res => setCases(res.data.data || []))
       .catch(err => console.error('Error fetching cases:', err));
 
     // Fetch clients (optional)
-    axios.get('http://localhost:4000/api/clients')
+    axios.get('${API_BASE_URL}/api/clients')
       .then(res => setClients(res.data.data || []))
       .catch(err => console.error('Error fetching clients:', err));
   }, []);
@@ -197,7 +197,7 @@ const navigate = useNavigate();
   }, []);
 
   const fetchDocuments = async () => {
-    const res = await fetch('http://localhost:4000/api/documents');
+    const res = await fetch('${API_BASE_URL}/api/documents');
     const data = await res.json();
     console.log('Fetched Documents:', data);
     setDocuments(data.data);
@@ -1372,7 +1372,7 @@ const navigate = useNavigate();
             // Construct the full URL
             const fullUrl = fileUrl.startsWith('http') 
               ? fileUrl 
-              : `http://localhost:4000/${fileUrl.replace(/^\/+/, '')}`;
+              : `${API_BASE_URL}/${fileUrl.replace(/^\/+/, '')}`;
             
             console.log('Full URL:', fullUrl);
             
@@ -1442,7 +1442,7 @@ const navigate = useNavigate();
         </p>
         {(previewDocument.fileUrl || previewDocument.filePath) && (
           <img
-            src={previewDocument.fileUrl || `http://localhost:4000/${previewDocument.filePath}`}
+            src={previewDocument.fileUrl || `${API_BASE_URL}/${previewDocument.filePath}`}
             alt={previewDocument.name}
             className="max-w-full mx-auto rounded"
             style={{ maxHeight: '500px' }}

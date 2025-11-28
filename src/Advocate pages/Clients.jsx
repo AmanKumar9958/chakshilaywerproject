@@ -34,6 +34,8 @@ const ClientsPage = () => {
     red: '#ef4444'
   };
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '${API_BASE_URL}';
+
   const [clients, setClients] = useState([]);
   const [newClient, setNewClient] = useState({
     clientName: "",
@@ -58,7 +60,7 @@ const ClientsPage = () => {
 
   const fetchClients = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/clients");
+      const res = await fetch("${API_BASE_URL}/api/clients");
       const data = await res.json();
       console.log('Fetched Clients Data:', data);
       if (data.success) setClients(data.clients);
@@ -75,7 +77,7 @@ const ClientsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:4000/api/clients", {
+      const response = await fetch("${API_BASE_URL}/api/clients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newClient)

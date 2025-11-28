@@ -1,411 +1,567 @@
 import React, { useState } from 'react';
+// import DocumentComparison from './Documentcomparizon'; // Import the component
 
 export default function Research() {
-  const [activeTab, setActiveTab] = useState('search');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchFilters, setSearchFilters] = useState({
-    jurisdiction: '',
-    year: '',
-    judge: '',
-    topic: ''
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  
+  // Dummy data - pre-populated documents
+  const [documents, setDocuments] = useState([
+    {
+      id: 1,
+      title: 'Constitutional Law Research - Right to Privacy',
+      type: 'research',
+      description: 'Comprehensive analysis of landmark judgments on right to privacy under Article 21, including Puttaswamy case and subsequent developments.',
+      fileName: 'privacy_research.pdf',
+      sizeKb: 2048,
+      uploadedAt: '2025-11-20T10:30:00',
+    },
+    {
+      id: 2,
+      title: 'Contract Law - Breach of Contract Analysis',
+      type: 'research',
+      description: 'Legal opinion on remedies available for breach of contract under Indian Contract Act, 1872.',
+      fileName: 'contract_breach_opinion.docx',
+      sizeKb: 512,
+      uploadedAt: '2025-11-18T14:20:00',
+    },
+    {
+      id: 3,
+      title: 'Criminal Procedure Code - Section 144 Application',
+      type: 'research',
+      description: 'Brief on the constitutional validity of Section 144 CrPC and its application in public order situations.',
+      fileName: 'section_144_brief.pdf',
+      sizeKb: 1536,
+      uploadedAt: '2025-11-15T09:15:00',
+    },
+    {
+      id: 4,
+      title: 'Property Rights Research Notes',
+      type: 'research',
+      description: 'Quick reference notes on property transfer laws and registration requirements in different states.',
+      fileName: 'property_rights_notes.txt',
+      sizeKb: 128,
+      uploadedAt: '2025-11-12T16:45:00',
+    },
+    {
+      id: 5,
+      title: 'Environmental Law - NGT Jurisdiction',
+      type: 'research',
+      description: 'Research paper on the jurisdiction and powers of National Green Tribunal in environmental matters.',
+      fileName: 'ngt_jurisdiction.pdf',
+      sizeKb: 3072,
+      uploadedAt: '2025-11-10T11:00:00',
+    },
+    {
+      id: 6,
+      title: 'Labour Law Compliance Checklist',
+      type: 'research',
+      description: 'Comprehensive checklist for labour law compliance for startups and SMEs in India.',
+      fileName: 'labour_compliance.docx',
+      sizeKb: 256,
+      uploadedAt: '2025-11-08T13:30:00',
+    },
+  ]);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    file: null,
   });
 
-  // Color palette matching sidebar
   const colors = {
     cream: '#f5f5ef',
     navy: '#1f2839',
     golden: '#b69d74',
     gray: '#6b7280',
-    lightGray: '#f9fafb'
   };
 
-  const handleSearch = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setFormData(prev => ({ ...prev, file }));
+  };
+
+  const handleUpload = (e) => {
     e.preventDefault();
-    // Handle search logic
-  };
-
-  const handleFilterChange = (filterName, value) => {
-    setSearchFilters(prev => ({
-      ...prev,
-      [filterName]: value
-    }));
-  };
-
-  const clearAllFilters = () => {
-    setSearchFilters({
-      jurisdiction: '',
-      year: '',
-      judge: '',
-      topic: ''
-    });
-    setSearchQuery('');
-  };
-
-  const searchResults = [
-    {
-      id: 1,
-      caseName: "Justice K.S. Puttaswamy (Retd.) vs Union Of India",
-      citation: "AIR 2017 SC 4161",
-      year: "2017",
-      court: "Supreme Court of India",
-      summary: "Landmark judgment recognizing right to privacy as a fundamental right under Article 21 of the Constitution.",
-      topics: ["Privacy", "Constitutional Law", "Fundamental Rights"]
-    },
-    {
-      id: 2,
-      caseName: "Shayara Bano vs Union of India",
-      citation: "AIR 2017 SC 4609",
-      year: "2017",
-      court: "Supreme Court of India",
-      summary: "Declared the practice of instant triple talaq unconstitutional.",
-      topics: ["Muslim Law", "Constitutional Law", "Gender Justice"]
+    if (!formData.file || !formData.title.trim()) {
+      alert('Please provide both file and title');
+      return;
     }
-  ];
 
-  // Mobile-friendly tab navigation
-  const TabButton = ({ tab, icon, label, activeTab, onClick }) => (
-    <button
-      className={`flex-1 min-w-0 px-4 py-3 font-semibold flex flex-col items-center text-xs md:text-sm md:flex-row md:justify-center transition-all duration-300 ${
-        activeTab === tab 
-          ? 'text-white border-b-2 shadow-sm' 
-          : 'text-[#1f2839] hover:bg-[rgba(182,157,116,0.1)]'
-      }`}
-      style={{
-        background: activeTab === tab ? `linear-gradient(135deg, ${colors.golden}, #c8b090)` : 'transparent',
-        borderBottomColor: activeTab === tab ? colors.golden : 'transparent'
-      }}
-      onClick={() => onClick(tab)}
-    >
-      <span className="mb-1 md:mb-0 md:mr-2">{icon}</span>
-      <span className="text-center md:text-left">{label}</span>
-    </button>
+    const newDoc = {
+      id: Date.now(),
+      title: formData.title.trim(),
+      type: 'research',
+      description: formData.description.trim(),
+      fileName: formData.file.name,
+      sizeKb: Math.round(formData.file.size / 1024),
+      uploadedAt: new Date().toISOString(),
+      file: formData.file,
+    };
+
+    setDocuments(prev => [newDoc, ...prev]);
+
+    // Reset form
+    setFormData({
+      title: '',
+      description: '',
+      file: null,
+    });
+    
+    const fileInput = document.getElementById('doc-file-input');
+    if (fileInput) fileInput.value = '';
+    
+    setShowUploadModal(false);
+  };
+
+  const filteredDocs = documents.filter(doc =>
+    [doc.title, doc.description, doc.fileName, doc.type]
+      .join(' ')
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
   );
 
-  return (
-    <div className="min-h-screen lg:ml-60 pt-16 lg:pt-0" style={{ background: colors.cream }}>
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: colors.navy }}>
-            Legal Research Center
-          </h1>
-          <p className="mt-1 text-sm sm:text-base" style={{ color: colors.gray }}>
-            Access comprehensive legal databases and research tools
-          </p>
+  const handleView = (doc) => {
+    if (doc.file) {
+      const url = URL.createObjectURL(doc.file);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      alert(`Opening document: ${doc.title}\n\nIn production, this would open the actual document from your storage.`);
+    }
+  };
+
+  const handleAnalyze = (doc) => {
+    setSelectedDocument(doc);
+    setShowAnalysis(true);
+  };
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-IN', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  // If analysis view is open, show DocumentComparison
+  if (showAnalysis) {
+    return (
+      <div className="relative">
+        {/* Close button overlay */}
+        <button
+          onClick={() => {
+            setShowAnalysis(false);
+            setSelectedDocument(null);
+          }}
+          className="fixed top-4 right-4 z-[60] p-2 rounded-lg text-white shadow-lg hover:opacity-90 transition-opacity"
+          style={{ background: colors.golden }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        
+        {/* Document info banner */}
+        <div 
+          className="fixed top-4 left-4 z-[60] px-4 py-2 rounded-lg shadow-lg"
+          style={{ background: 'rgba(255,255,255,0.95)', border: `1px solid ${colors.border}` }}
+        >
+          <p className="text-xs font-medium" style={{ color: colors.gray }}>Analyzing Document:</p>
+          <p className="text-sm font-semibold" style={{ color: colors.navy }}>{selectedDocument?.title}</p>
         </div>
 
-        {/* Tab Navigation - Only Search and Tools */}
-        <div className="mb-6 overflow-x-auto rounded-xl" 
-          style={{ 
-            background: 'rgba(255, 255, 255, 0.5)',
-            border: `1px solid rgba(182, 157, 116, 0.2)`
-          }}
-        >
-          <div className="flex">
-            <TabButton
-              tab="search"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              }
-              label="Search Judgments"
-              activeTab={activeTab}
-              onClick={setActiveTab}
+        <DocumentComparison />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="min-h-screen lg:ml-60 pt-16 lg:pt-0"
+      style={{ background: colors.cream }}
+    >
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h1
+              className="text-2xl sm:text-3xl font-bold"
+              style={{ color: colors.navy }}
+            >
+              Research Documents
+            </h1>
+            <p
+              className="mt-1 text-sm sm:text-base"
+              style={{ color: colors.gray }}
+            >
+              Upload, search, and manage your legal research documents
+            </p>
+          </div>
+
+          {/* Upload Button */}
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-95 flex items-center justify-center whitespace-nowrap shadow-sm"
+            style={{
+              background: `linear-gradient(135deg, ${colors.golden}, #c8b090)`,
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Upload Document
+          </button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative max-w-2xl">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 shadow-sm"
+              placeholder="Search research documents by title, description, or filename..."
+              style={{
+                border: `1px solid rgba(182, 157, 116, 0.35)`,
+                background: 'white',
+                color: colors.navy,
+              }}
             />
-            <TabButton
-              tab="tools"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              }
-              label="Research Tools"
-              activeTab={activeTab}
-              onClick={setActiveTab}
-            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 absolute left-3.5 top-3.5"
+              style={{ color: colors.gray }}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
           </div>
         </div>
 
-        {/* Content based on active tab */}
-        <div className="min-h-96">
-          {activeTab === 'search' && (
-            <div className="space-y-6">
-              {/* Search Form */}
-              <div className="p-4 sm:p-6 rounded-xl backdrop-blur-sm" 
-                style={{ 
-                  background: 'rgba(255, 255, 255, 0.7)',
-                  border: `1px solid rgba(182, 157, 116, 0.2)`,
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-                }}
+        {/* Document cards */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2
+              className="text-lg font-semibold"
+              style={{ color: colors.navy }}
+            >
+              {searchQuery ? `Found ${filteredDocs.length} document(s)` : `All Documents (${documents.length})`}
+            </h2>
+            {filteredDocs.length > 0 && (
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: `rgba(182, 157, 116, 0.15)`, color: colors.golden }}>
+                {filteredDocs.length} total
+              </span>
+            )}
+          </div>
+
+          {filteredDocs.length === 0 ? (
+            <div
+              className="p-8 sm:p-12 rounded-xl text-center"
+              style={{
+                background: 'rgba(255,255,255,0.8)',
+                border: `1px solid rgba(182,157,116,0.25)`,
+              }}
+            >
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: `rgba(182, 157, 116, 0.1)` }}
               >
-                <h3 className="font-semibold text-lg sm:text-xl mb-4" style={{ color: colors.navy }}>
-                  Search Legal Database
-                </h3>
-                <form onSubmit={handleSearch}>
-                  <div className="relative mb-4">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:outline-none text-sm sm:text-base"
-                      placeholder="Search by case name, citation, topic, or keywords"
-                      style={{
-                        border: `1px solid rgba(182, 157, 116, 0.3)`,
-                        color: colors.navy,
-                        background: 'white'
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      className="absolute right-2 top-2 p-2 rounded-md transition-all"
-                      style={{
-                        background: `linear-gradient(135deg, ${colors.golden}, #c8b090)`,
-                        color: 'white'
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                    {[
-                      { label: 'Jurisdiction', name: 'jurisdiction', options: ['All Jurisdictions', 'Supreme Court', 'High Courts', 'International'] },
-                      { label: 'Year', name: 'year', options: ['All Years', '2023', '2022', '2021', '2020'] },
-                      { label: 'Topic', name: 'topic', options: ['All Topics', 'Constitutional Law', 'Criminal Law', 'Contract Law', 'Property Law'] }
-                    ].map((filter, idx) => (
-                      <div key={idx}>
-                        <label className="block text-sm font-medium mb-1" style={{ color: colors.navy }}>
-                          {filter.label}
-                        </label>
-                        <select
-                          value={searchFilters[filter.name]}
-                          onChange={(e) => handleFilterChange(filter.name, e.target.value)}
-                          className="w-full px-3 py-2 rounded-md text-sm focus:outline-none"
-                          style={{
-                            border: `1px solid rgba(182, 157, 116, 0.3)`,
-                            color: colors.navy,
-                            background: 'white'
-                          }}
-                        >
-                          {filter.options.map((opt, i) => (
-                            <option key={i} value={i === 0 ? '' : opt.toLowerCase()}>{opt}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1" style={{ color: colors.navy }}>
-                        Judge
-                      </label>
-                      <input
-                        type="text"
-                        value={searchFilters.judge}
-                        onChange={(e) => handleFilterChange('judge', e.target.value)}
-                        className="w-full px-3 py-2 rounded-md text-sm focus:outline-none"
-                        placeholder="Judge name"
-                        style={{
-                          border: `1px solid rgba(182, 157, 116, 0.3)`,
-                          color: colors.navy,
-                          background: 'white'
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <button
-                      type="button"
-                      className="text-sm font-medium hover:opacity-80 transition-opacity"
-                      style={{ color: colors.golden }}
-                    >
-                      Advanced Filters
-                    </button>
-                    <button
-                      type="button"
-                      className="text-sm font-medium hover:opacity-80 transition-opacity"
-                      style={{ color: colors.gray }}
-                      onClick={clearAllFilters}
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                </form>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8"
+                  style={{ color: colors.gray }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
               </div>
-
-              {/* Search Results */}
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-4" style={{ color: colors.navy }}>
-                  Search Results
-                </h3>
-                
-                {searchQuery ? (
-                  <div className="space-y-4">
-                    {searchResults.map((result) => (
-                      <div 
-                        key={result.id} 
-                        className="p-4 sm:p-5 rounded-xl transition-all hover:scale-[1.01]"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.8)',
-                          border: `1px solid rgba(182, 157, 116, 0.2)`,
-                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-                        }}
-                      >
-                        <h4 className="font-bold mb-2 text-base sm:text-lg" style={{ color: colors.navy }}>
-                          {result.caseName}
-                        </h4>
-                        <div className="flex flex-wrap items-center text-xs sm:text-sm mb-3 gap-2" style={{ color: colors.gray }}>
-                          <span className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            {result.citation}
-                          </span>
-                          <span className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            {result.year}
-                          </span>
-                          <span className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            {result.court}
-                          </span>
-                        </div>
-                        <p className="mb-3 text-sm sm:text-base" style={{ color: colors.navy }}>
-                          {result.summary}
-                        </p>
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {result.topics.map((topic, index) => (
-                            <span 
-                              key={index} 
-                              className="text-xs px-2 py-1 rounded"
-                              style={{
-                                background: `rgba(182, 157, 116, 0.15)`,
-                                color: colors.golden
-                              }}
-                            >
-                              {topic}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <button 
-                            className="font-medium text-sm flex items-center hover:opacity-80 transition-opacity"
-                            style={{ color: colors.golden }}
-                          >
-                            Read Full Judgment
-                          </button>
-                          <div className="flex space-x-2">
-                            <button style={{ color: colors.gray }} className="p-1 hover:opacity-70">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                              </svg>
-                            </button>
-                            <button style={{ color: colors.gray }} className="p-1 hover:opacity-70">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div 
-                    className="p-8 rounded-xl text-center"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.7)',
-                      border: `1px solid rgba(182, 157, 116, 0.2)`
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-3" style={{ color: colors.gray }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <h4 className="text-lg font-medium" style={{ color: colors.navy }}>
-                      Enter your search query
-                    </h4>
-                    <p className="mt-1 text-sm" style={{ color: colors.gray }}>
-                      Search by case name, citation, topic, or keywords
-                    </p>
-                  </div>
-                )}
-              </div>
+              <h3
+                className="text-base font-semibold mb-1"
+                style={{ color: colors.navy }}
+              >
+                {searchQuery ? 'No matching documents' : 'No documents yet'}
+              </h3>
+              <p className="text-sm" style={{ color: colors.gray }}>
+                {searchQuery 
+                  ? 'Try adjusting your search terms' 
+                  : 'Click "Upload Document" to add your first research document'}
+              </p>
             </div>
-          )}
-
-          {activeTab === 'tools' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                {
-                  title: "Case Citator",
-                  description: "Check the current status of a case - whether it's been overruled, affirmed, or cited.",
-                  icon: (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: colors.golden }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  ),
-                  buttonText: "Check Status",
-                  placeholder: "Enter case citation"
-                },
-                {
-                  title: "Statute Finder",
-                  description: "Quickly locate statutes and legislative materials by title, section, or keyword.",
-                  icon: (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: colors.golden }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  ),
-                  buttonText: "Search Statutes",
-                  placeholder: "Search statutes"
-                }
-              ].map((tool, index) => (
-                <div 
-                  key={index} 
-                  className="p-4 rounded-xl transition-all hover:scale-[1.01]"
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredDocs.map(doc => (
+                <div
+                  key={doc.id}
+                  className="p-5 rounded-xl flex flex-col justify-between h-full transition-all hover:shadow-md"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.8)',
-                    border: `1px solid rgba(182, 157, 116, 0.2)`
+                    background: 'rgba(255,255,255,0.9)',
+                    border: `1px solid rgba(182,157,116,0.25)`,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                   }}
                 >
-                  <div className="flex items-center mb-3">
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
-                      style={{ background: `rgba(182, 157, 116, 0.15)` }}
-                    >
-                      {tool.icon}
+                  <div>
+                    {/* Type badge and date */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span
+                        className="text-xs uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full"
+                        style={{ 
+                          background: `rgba(182, 157, 116, 0.15)`,
+                          color: colors.golden 
+                        }}
+                      >
+                        {doc.type}
+                      </span>
+                      <span className="text-xs" style={{ color: colors.gray }}>
+                        {formatDate(doc.uploadedAt)}
+                      </span>
                     </div>
-                    <h3 className="font-semibold" style={{ color: colors.navy }}>{tool.title}</h3>
+
+                    {/* Title */}
+                    <h3
+                      className="font-bold mb-2 text-base leading-snug"
+                      style={{ color: colors.navy }}
+                    >
+                      {doc.title}
+                    </h3>
+
+                    {/* File info */}
+                    <div className="flex items-center text-xs mb-3 pb-3 border-b" style={{ color: colors.gray, borderColor: 'rgba(182, 157, 116, 0.15)' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="truncate">{doc.fileName}</span>
+                      <span className="mx-1.5">•</span>
+                      <span>{doc.sizeKb} KB</span>
+                    </div>
+
+                    {/* Description */}
+                    {doc.description && (
+                      <p
+                        className="text-sm mb-4 line-clamp-2 leading-relaxed"
+                        style={{ color: colors.gray }}
+                      >
+                        {doc.description}
+                      </p>
+                    )}
                   </div>
-                  <p className="text-sm mb-3" style={{ color: colors.gray }}>{tool.description}</p>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 rounded text-sm mb-2 focus:outline-none"
-                    placeholder={tool.placeholder}
-                    style={{
-                      border: `1px solid rgba(182, 157, 116, 0.3)`,
-                      color: colors.navy
-                    }}
-                  />
-                  <button 
-                    className="w-full py-2 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
-                    style={{ background: `linear-gradient(135deg, ${colors.golden}, #c8b090)` }}
-                  >
-                    {tool.buttonText}
-                  </button>
+
+                  {/* Actions - Better UI with grid layout */}
+                  <div className="grid grid-cols-2 gap-2 mt-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleView(doc)}
+                      className="px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:opacity-80 flex items-center justify-center"
+                      style={{ 
+                        border: `1.5px solid ${colors.golden}`,
+                        color: colors.golden,
+                        background: 'transparent'
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAnalyze(doc)}
+                      className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 flex items-center justify-center shadow-sm"
+                      style={{
+                        background: `linear-gradient(135deg, ${colors.golden}, #c8b090)`,
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Analyze
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowUploadModal(false)}
+        >
+          <div 
+            className="w-full max-w-md rounded-xl p-6 max-h-[90vh] overflow-y-auto"
+            style={{
+              background: 'white',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
+                  style={{ background: `rgba(182, 157, 116, 0.15)` }}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-5 w-5" 
+                    style={{ color: colors.golden }}
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <h2
+                  className="text-lg font-semibold"
+                  style={{ color: colors.navy }}
+                >
+                  Upload Research Document
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="p-1 rounded-md hover:bg-gray-100"
+                style={{ color: colors.gray }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleUpload}>
+              {/* File */}
+              <div>
+                <label
+                  htmlFor="doc-file-input"
+                  className="block text-sm font-medium mb-1.5"
+                  style={{ color: colors.navy }}
+                >
+                  File <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  id="doc-file-input"
+                  type="file"
+                  onChange={handleFileChange}
+                  accept=".pdf,.doc,.docx,.txt"
+                  className="block w-full text-sm file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:text-sm file:font-medium file:text-white cursor-pointer rounded-md"
+                  style={{
+                    border: `1px solid rgba(182,157,116,0.35)`,
+                    background: 'white',
+                    color: colors.navy,
+                  }}
+                />
+                {formData.file && (
+                  <p className="mt-1.5 text-xs flex items-center" style={{ color: colors.golden }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {formData.file.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Title */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-1.5"
+                  style={{ color: colors.navy }}
+                >
+                  Document Title <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2"
+                  placeholder="e.g., Privacy Law Research Memo"
+                  style={{
+                    border: `1px solid rgba(182,157,116,0.35)`,
+                    background: 'white',
+                    color: colors.navy,
+                  }}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-1.5"
+                  style={{ color: colors.navy }}
+                >
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-md text-sm resize-none focus:outline-none focus:ring-2"
+                  placeholder="Brief description of the document content..."
+                  style={{
+                    border: `1px solid rgba(182,157,116,0.35)`,
+                    background: 'white',
+                    color: colors.navy,
+                  }}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all hover:bg-gray-100"
+                  style={{
+                    border: `1px solid rgba(182,157,116,0.35)`,
+                    color: colors.navy,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-95 flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.golden}, #c8b090)`,
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Upload
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -60,6 +60,8 @@ const Cases = () => {
     red: '#ef4444'
   };
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000'
+
   const [selectedCase, setSelectedCase] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -180,14 +182,14 @@ const Cases = () => {
   const fileUploadRef = useRef();
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/cases')
+     fetch(`${API_BASE_URL}/api/cases`)
       .then(res => res.json())
       .then(data => setCases(data.data))
       .catch(err => console.error('Error fetching cases:', err));
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/clients')
+    fetch(`${API_BASE_URL}/api/clients`)
       .then((res) => res.json())
       .then((data) => {
         const clientList = Array.isArray(data) ? data : data.data || [];
@@ -291,8 +293,8 @@ const Cases = () => {
     try {
       const method = editingCase ? 'PUT' : 'POST';
       const url = editingCase
-        ? `http://localhost:4000/api/cases/${editingCase._id}`
-        : 'http://localhost:4000/api/cases';
+         ? `${API_BASE_URL}/api/cases/${editingCase._id}`
+      : `${API_BASE_URL}/api/cases`;
 
       const res = await fetch(url, {
         method,
