@@ -1,7 +1,17 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDB from './src/config/db.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+// Create require for CommonJS modules (only for db.js which is CommonJS)
+const require = createRequire(import.meta.url);
+
+// Import only db.js as CommonJS (if it's CommonJS)
+const connectDB = require('./src/config/db.js');
+
+// Import all routes as ES modules
 import clientRoutes from './src/routes/clientRoutes.js';
 import caseRoutes from './src/routes/caseRoutes.js';
 import documentRoutes from './src/routes/documentRoutes.js';
@@ -16,9 +26,7 @@ import googleCalendarRoutes from './src/routes/googleCalendarRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
 import caseDetailViewRoutes from './src/routes/caseDetailViewRoutes.js';
 import razorpayRoutes from './src/routes/razorpayRoutes.js';
-import subscriptionRoutes from './src/routes/subscriptionRoutes.js'; // ⭐ NEW - Subscription routes
-import path from 'path';
-import { fileURLToPath } from 'url';
+import subscriptionRoutes from './src/routes/subscriptionRoutes.js';
 
 // ES Module __dirname fix
 const __filename = fileURLToPath(import.meta.url);
@@ -90,7 +98,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/api/health',
       auth: '/api/auth',
-      subscription: '/api/subscription', // ⭐ NEW
+      subscription: '/api/subscription',
       clients: '/api/clients',
       cases: '/api/cases',
       caseDetails: '/api/casedetails/:caseId/{timeline|payments|notes}',
@@ -411,4 +419,3 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 startServer();
 
 export default app;
-    

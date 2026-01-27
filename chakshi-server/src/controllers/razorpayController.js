@@ -1,17 +1,45 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// Initialize Razorpay instance
-const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// ═══════════════════════════════════════════════════════════════
+// SAFE RAZORPAY INITIALIZATION (with fallback)
+// ═══════════════════════════════════════════════════════════════
+
+// ❌ OLD CODE (commented out - causes error if .env missing):
+// const razorpayInstance = new Razorpay({
+//   key_id: process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET,
+// });
+
+// ✅ NEW CODE (safe - won't crash if .env missing):
+let razorpayInstance = null;
+
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+  console.log('✅ Razorpay initialized successfully');
+} else {
+  console.warn('⚠️  Razorpay credentials not found in .env - Payment features will be disabled');
+  console.warn('⚠️  Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env to enable payments');
+}
+
+// ═══════════════════════════════════════════════════════════════
 
 // @desc    Create Razorpay Order
 // @route   POST /api/payment/create-order
 // @access  Public
 export const createOrder = async (req, res) => {
   try {
+    // Check if Razorpay is configured
+    if (!razorpayInstance) {
+      return res.status(503).json({
+        success: false,
+        message: 'Payment service not configured. Please add Razorpay credentials to .env file.'
+      });
+    }
+
     const { amount, currency, planName, billingCycle, userRole, userId } = req.body;
 
     // Validate required fields
@@ -78,6 +106,14 @@ export const createOrder = async (req, res) => {
 // @access  Public
 export const verifyPayment = async (req, res) => {
   try {
+    // Check if Razorpay is configured
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(503).json({
+        success: false,
+        message: 'Payment verification not configured. Please add RAZORPAY_KEY_SECRET to .env file.'
+      });
+    }
+
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     // Validate required fields
@@ -141,6 +177,14 @@ export const verifyPayment = async (req, res) => {
 // @access  Public/Protected
 export const getPaymentDetails = async (req, res) => {
   try {
+    // Check if Razorpay is configured
+    if (!razorpayInstance) {
+      return res.status(503).json({
+        success: false,
+        message: 'Payment service not configured. Please add Razorpay credentials to .env file.'
+      });
+    }
+
     const { paymentId } = req.params;
 
     if (!paymentId) {
