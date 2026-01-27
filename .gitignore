@@ -15,8 +15,7 @@ Thumbs.db
 .idea/
 
 # Env
-.env*
-!.env.example
+
 
 # Build outputs
 /dist/
