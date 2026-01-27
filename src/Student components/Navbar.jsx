@@ -145,7 +145,7 @@ const Navbar = () => {
         {/* Logo/Brand */}
         <div className="p-6 border-b border-[rgba(182,157,116,0.3)]">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-[#1f2839] to-[#b69d74] bg-clip-text text-transparent">
-            ⚖️ LawHub
+            ⚖️ Chakshi Legal
           </h1>
           <p className="text-xs text-[#6b7280] mt-1">Student Portal</p>
         </div>

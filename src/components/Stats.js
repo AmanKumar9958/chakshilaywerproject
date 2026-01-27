@@ -562,7 +562,7 @@ const Stats = () => {
                 >
                   <CheckCircle className="w-5 h-5 text-[#b69d74]" />
                 </div>
-                <span style={{ color: '#1f2839' }}>3 Days Free Trial Available</span>
+                <span style={{ color: '#1f2839' }}>7 Days Free Trial Available</span>
               </div>
               <div className="flex items-center gap-3 group">
                 <div 

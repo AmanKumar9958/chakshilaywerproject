@@ -8,7 +8,7 @@ import {
   changePassword,
   logout
 } from '../controllers/authController.js';
-import { protect } from '../middlewares/auth.js';
+import { authenticate } from '../middleware/auth.js'; // ✅ Already correct
 
 const router = express.Router();
 
@@ -49,14 +49,18 @@ const changePasswordValidation = [
     .isLength({ min: 6 }).withMessage('New password must be at least 6 characters long')
 ];
 
-// Public routes
+// ============================================
+// PUBLIC ROUTES (No authentication needed)
+// ============================================
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
 
-// Protected routes
-router.get('/me', protect, getMe);
-router.put('/profile', protect, updateProfile);
-router.put('/change-password', protect, changePasswordValidation, changePassword);
-router.post('/logout', protect, logout);
+// ============================================
+// PROTECTED ROUTES (Authentication required)
+// ============================================
+router.get('/me', authenticate, getMe); // ⭐ CHANGED: protect → authenticate
+router.put('/profile', authenticate, updateProfile); // ⭐ CHANGED: protect → authenticate
+router.put('/change-password', authenticate, changePasswordValidation, changePassword); // ⭐ CHANGED: protect → authenticate
+router.post('/logout', authenticate, logout); // ⭐ CHANGED: protect → authenticate
 
 export default router;

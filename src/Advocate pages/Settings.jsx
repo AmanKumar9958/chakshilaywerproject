@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Settings.css';
+// import './Settings.css';
 import { 
   User, 
   Briefcase, 
@@ -1434,7 +1434,7 @@ export default function Settings() {
   );
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f5f5ef' }}>
+    <div className="min-h-screen ml-60" style={{ backgroundColor: '#f5f5ef' }}>
       {/* Global Success/Error Toast */}
       {(saveStatus === 'success' || saveStatus === 'error') && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center space-x-3 backdrop-blur-md ${

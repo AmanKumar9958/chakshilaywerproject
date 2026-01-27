@@ -14,7 +14,9 @@ import clerkDashboardRoutes from './src/routes/clerkDashboardRoutes.js';
 import clerkGeneralPartiesRoutes from './src/routes/clerkGeneralPartiesRoutes.js';
 import googleCalendarRoutes from './src/routes/googleCalendarRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
-import caseDetailViewRoutes from './src/routes/caseDetailViewRoutes.js'; // ⭐ NEW
+import caseDetailViewRoutes from './src/routes/caseDetailViewRoutes.js';
+import razorpayRoutes from './src/routes/razorpayRoutes.js';
+import subscriptionRoutes from './src/routes/subscriptionRoutes.js'; // ⭐ NEW - Subscription routes
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -28,7 +30,7 @@ dotenv.config();
 const app = express();
 
 console.log('\n╔═══════════════════════════════════════════════════════════╗');
-console.log('║           🚀 CHAKSHI SERVER v1.4.0                       ║');
+console.log('║           🚀 CHAKSHI SERVER v1.6.0                       ║');
 console.log('╚═══════════════════════════════════════════════════════════╝\n');
 
 // ═══════════════════════════════════════════════════════════════
@@ -82,12 +84,13 @@ app.get('/', (req, res) => {
   res.json({
     status: 'success',
     message: '✅ Chakshi Legal Management System',
-    version: '1.4.0',
+    version: '1.6.0',
     timestamp: new Date().toISOString(),
     server: 'Running',
     endpoints: {
       health: '/api/health',
       auth: '/api/auth',
+      subscription: '/api/subscription', // ⭐ NEW
       clients: '/api/clients',
       cases: '/api/cases',
       caseDetails: '/api/casedetails/:caseId/{timeline|payments|notes}',
@@ -95,7 +98,8 @@ app.get('/', (req, res) => {
       student: '/api/student',
       assignments: '/api/assignments',
       clerk: '/api/clerkcasedetails',
-      calendar: '/api/calendar'
+      calendar: '/api/calendar',
+      payment: '/api/payment'
     }
   });
 });
@@ -120,22 +124,32 @@ app.get('/api/health', (req, res) => {
       nodeVersion: process.version
     },
     database: 'Connected',
+    razorpay: process.env.RAZORPAY_KEY_ID ? 'Configured ✅' : 'Not configured ⚠️',
     timestamp: new Date().toISOString(),
-    version: '1.4.0',
+    version: '1.6.0',
     environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// Authentication (Highest priority)
+// Authentication (Highest priority - NO middleware needed)
 app.use('/api/auth', authRoutes);
 console.log('   🔐 Auth routes:          /api/auth');
 
+// ⭐ Subscription routes (NO middleware needed - for checking status, upgrading)
+app.use('/api/subscription', subscriptionRoutes);
+console.log('   🎫 Subscription routes:  /api/subscription');
+
+// Payment routes (NO middleware needed - for creating orders)
+app.use('/api/payment', razorpayRoutes);
+console.log('   💳 Payment routes:       /api/payment');
+
+// ⭐ IMPORTANT: All routes below this comment should have subscription middleware applied in their route files
 // Core application routes (alphabetically organized)
 const routes = [
   { path: '/api/assignments', router: newAssignmentRoutes, name: 'Assignments' },
   { path: '/api/calendar', router: googleCalendarRoutes, name: 'Google Calendar' },
   { path: '/api/cases', router: caseRoutes, name: 'Cases' },
-  { path: '/api/casedetails', router: caseDetailViewRoutes, name: 'Case Details (Timeline/Payments/Notes)' }, // ⭐ NEW
+  { path: '/api/casedetails', router: caseDetailViewRoutes, name: 'Case Details (Timeline/Payments/Notes)' },
   { path: '/api/clients', router: clientRoutes, name: 'Clients' },
   { path: '/api/clerk-parties', router: clerkGeneralPartiesRoutes, name: 'Clerk Parties' },
   { path: '/api/clerkcasedetails', router: clerkCaseDetailsRoutes, name: 'Clerk Case Details' },
@@ -296,14 +310,16 @@ const startServer = async () => {
       console.log(`🌐 Network:      http://${HOST}:${PORT}`);
       console.log(`📊 Environment:  ${process.env.NODE_ENV || 'development'}`);
       console.log(`💾 MongoDB:      ${process.env.MONGO_URI ? 'Connected ✅' : 'Not configured ⚠️'}`);
+      console.log(`💳 Razorpay:     ${process.env.RAZORPAY_KEY_ID ? 'Configured ✅' : 'Not configured ⚠️'}`);
       console.log(`⏰ Started:      ${localTime}`);
       console.log('╚═══════════════════════════════════════════════════════════╝');
       console.log('\n📋 Quick Access Links:');
       console.log(`   • Health Check:    http://localhost:${PORT}/api/health`);
       console.log(`   • API Root:        http://localhost:${PORT}/`);
+      console.log(`   • Auth:            http://localhost:${PORT}/api/auth/register`);
+      console.log(`   • Subscription:    http://localhost:${PORT}/api/subscription/trial-status`);
+      console.log(`   • Payment:         http://localhost:${PORT}/api/payment/create-order`);
       console.log(`   • Documents:       http://localhost:${PORT}/api/documents`);
-      console.log(`   • Case Details:    http://localhost:${PORT}/api/casedetails/:id/timeline`);
-      console.log(`   • Student Portal:  http://localhost:${PORT}/api/student`);
       console.log('╚═══════════════════════════════════════════════════════════╝\n');
     });
 
@@ -357,7 +373,6 @@ process.on('unhandledRejection', (reason, promise) => {
       process.exit(1);
     });
     
-    // Force shutdown after 10 seconds
     setTimeout(() => {
       console.error('❌ Forced shutdown after timeout');
       process.exit(1);
@@ -380,7 +395,6 @@ const gracefulShutdown = (signal) => {
       process.exit(0);
     });
 
-    // Force shutdown after 15 seconds
     setTimeout(() => {
       console.error('❌ Forced shutdown: Timeout reached');
       process.exit(1);
@@ -397,3 +411,4 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 startServer();
 
 export default app;
+    

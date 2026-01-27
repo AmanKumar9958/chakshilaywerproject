@@ -1,5 +1,5 @@
 const NewDocument = require('../models/newDocumentModel');
-const NewCase = require('../models/newCaseModel');
+const NewCase = require('../models/NewCaseModel');
 const fs = require('fs');
 const path = require('path');
 

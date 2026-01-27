@@ -27,6 +27,7 @@ import Cases from "./Advocate pages/Cases";
 import Clients from "./Advocate pages/Clients";
 import ContractComparison from "./Advocate pages/ContractComparison";
 import Documents from "./Advocate pages/Documents";
+import AIHub from "./Advocate pages/AIHub";
 import Integrations from "./Advocate pages/Integrations";
 import Research from "./Advocate pages/Research";
 import Settings from "./Advocate pages/Settings";
@@ -266,7 +267,7 @@ function AppContent() {
           <Route path="cases" element={<Cases />} />
           <Route path="clients" element={<Clients />} />
           <Route path="contractcomparison" element={<ContractComparison />} />
-      
+          <Route path="aihub" element={<AIHub />} />
           <Route path="documents" element={<Documents />} />
             {/* <Route path="document-analysis" element={<DocumentAnalysisWorkspace />} /> */}
           <Route path="integrations" element={<Integrations />} />
