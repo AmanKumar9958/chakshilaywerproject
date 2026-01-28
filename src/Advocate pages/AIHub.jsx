@@ -5,7 +5,7 @@ const AIHub = () => {
   const [iframeKey, setIframeKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
-  const AI_HUB_URL = "http://198.204.232.37:5000/";
+  const AI_HUB_URL = "chakshi.in";
 
   const handleRefresh = () => {
     setIframeKey(prev => prev + 1);

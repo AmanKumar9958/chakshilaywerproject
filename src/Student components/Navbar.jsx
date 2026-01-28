@@ -17,7 +17,8 @@ import {
   FiChevronDown,
   FiMenu,
   FiX,
-  FiFolder // ✅ ADDED: Icon for My Documents
+  FiFolder,
+  FiCpu // ✅ ADDED: Icon for AI Hub
 } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -36,13 +37,14 @@ const Navbar = () => {
   const notificationRef = useRef(null);
   const userMenuRef = useRef(null);
 
-  // Navigation items with icons - ✅ UPDATED: Added My Documents
+  // Navigation items with icons - ✅ UPDATED: Added AI Hub
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FiHome, path: '/student/dashboard', premium: false },
     { id: 'assignments', label: 'Assignments', icon: FiFileText, path: '/student/assignments', premium: false },
     { id: 'calendar', label: 'Calendar', icon: FiCalendar, path: '/student/calendar', premium: false },
     { id: 'research', label: 'Research', icon: FiSearch, path: '/student/research', premium: false },
-    { id: 'mydocuments', label: 'Documents', icon: FiFolder, path: '/student/mydocuments', premium: false } // ✅ NEW
+    { id: 'mydocuments', label: 'Documents', icon: FiFolder, path: '/student/mydocuments', premium: false },
+    { id: 'aihub', label: 'AI Hub', icon: FiCpu, path: '/advocate/aihub', premium: true } // ✅ NEW: AI Hub with premium badge
   ];
 
   const notifications = [
@@ -61,6 +63,14 @@ const Navbar = () => {
       time: '4 hours ago',
       unread: true,
       priority: 'medium'
+    },
+    {
+      id: 3,
+      title: 'AI Hub Access',
+      message: 'New AI features available in AI Hub',
+      time: '1 day ago',
+      unread: false,
+      priority: 'low'
     }
   ];
 
@@ -229,6 +239,9 @@ const Navbar = () => {
                     key={notification.id}
                     className="p-3 border-b border-[rgba(31,40,57,0.05)] hover:bg-[rgba(182,157,116,0.05)] cursor-pointer"
                     onClick={() => markNotificationAsRead(notification.id)}
+                    style={{
+                      background: notification.unread ? 'rgba(182,157,116,0.05)' : 'transparent'
+                    }}
                   >
                     <p className="font-semibold text-sm text-[#1f2839]">{notification.title}</p>
                     <p className="text-xs text-[#6b7280] mt-1">{notification.message}</p>
@@ -238,15 +251,6 @@ const Navbar = () => {
               </div>
             )}
           </div>
-
-          {/* Settings */}
-          {/* <button
-            onClick={() => navigate('/student/settings')}
-            className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-sm font-medium text-[#1f2839] hover:bg-[rgba(182,157,116,0.1)] transition-all duration-300"
-          >
-            <FiSettings className="w-5 h-5" />
-            <span>Settings</span>
-          </button> */}
 
           {/* Logout */}
           <button
