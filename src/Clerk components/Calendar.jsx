@@ -38,7 +38,7 @@ const Calendar = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/auth/google');
+      const response = await fetch('https://server.chakshi.com/auth/google');
       const data = await response.json();
       
       // Open Google OAuth in same window

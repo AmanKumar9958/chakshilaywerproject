@@ -1,9 +1,9 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
-const { 
+import { 
   uploadDocument,
   getAllDocuments,
   getDocumentById,
@@ -11,7 +11,7 @@ const {
   downloadDocument,
   deleteDocument,
   getDocumentsByCase
-} = require('../controllers/newDocumentController');
+} from '../controllers/newDocumentController.js';
 
 const router = express.Router();
 
@@ -177,4 +177,4 @@ console.log('   🔍 GET    /api/new-document/:id             - Get Document By 
 console.log('   🗑️ DELETE /api/new-document/:id             - Delete Document');
 console.log('═══════════════════════════════════════════════════════════\n');
 
-module.exports = router;
+export default router;

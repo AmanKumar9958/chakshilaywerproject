@@ -68,7 +68,7 @@ const AnalyticsDashboard = () => {
   };
 
   // API Configuration
-  const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api`;
+  const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api` || 'https://server.chakshi.com';
 
 
   // State Management

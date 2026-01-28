@@ -1,6 +1,21 @@
-const express = require('express');
+import express from 'express';
+import { 
+  addTimelineEntry,
+  getTimeline,
+  updateTimelineStatus,
+  deleteTimelineEntry,
+  addPayment,
+  getPayments,
+  updatePaymentStatus,
+  getPaymentStats,
+  deletePayment,
+  addNote,
+  getNotes,
+  updateNote,
+  deleteNote 
+} from '../controllers/caseDetailViewController.js';
+
 const router = express.Router();
-const controller = require('../controllers/caseDetailViewController');
 
 console.log('\n╔═══════════════════════════════════════════════════════════╗');
 console.log('║         🛣️  CASE DETAIL VIEW ROUTES LOADING              ║');
@@ -34,25 +49,25 @@ console.log('📅 Registering Timeline Routes...');
 router.get('/:caseId/timeline', (req, res, next) => {
   console.log('   📅 GET Timeline for case:', req.params.caseId);
   next();
-}, controller.getTimeline);
+}, getTimeline);
 
 router.post('/:caseId/timeline', (req, res, next) => {
   console.log('   📅 POST Timeline for case:', req.params.caseId);
   if (req.body?.stage) console.log('      Stage:', req.body.stage);
   if (req.body?.date) console.log('      Date:', req.body.date);
   next();
-}, controller.addTimelineEntry);
+}, addTimelineEntry);
 
 router.put('/:caseId/timeline/:timelineId', (req, res, next) => {
   console.log('   📅 PUT Timeline:', req.params.timelineId);
   if (req.body?.status) console.log('      New status:', req.body.status);
   next();
-}, controller.updateTimelineStatus);
+}, updateTimelineStatus);
 
 router.delete('/:caseId/timeline/:timelineId', (req, res, next) => {
   console.log('   📅 DELETE Timeline:', req.params.timelineId);
   next();
-}, controller.deleteTimelineEntry);
+}, deleteTimelineEntry);
 
 console.log('   ✅ GET    /:caseId/timeline');
 console.log('   ✅ POST   /:caseId/timeline');
@@ -68,13 +83,13 @@ console.log('💰 Registering Payment Routes...');
 router.get('/:caseId/payments/stats', (req, res, next) => {
   console.log('   💰 GET Payment Stats for case:', req.params.caseId);
   next();
-}, controller.getPaymentStats);
+}, getPaymentStats);
 
 // Then general /payments route
 router.get('/:caseId/payments', (req, res, next) => {
   console.log('   💰 GET Payments for case:', req.params.caseId);
   next();
-}, controller.getPayments);
+}, getPayments);
 
 router.post('/:caseId/payments', (req, res, next) => {
   console.log('   💰 POST Payment for case:', req.params.caseId);
@@ -82,18 +97,18 @@ router.post('/:caseId/payments', (req, res, next) => {
   if (req.body?.description) console.log('      Description:', req.body.description);
   if (req.body?.status) console.log('      Status:', req.body.status);
   next();
-}, controller.addPayment);
+}, addPayment);
 
 router.put('/:caseId/payments/:paymentId', (req, res, next) => {
   console.log('   💰 PUT Payment:', req.params.paymentId);
   if (req.body?.status) console.log('      New status:', req.body.status);
   next();
-}, controller.updatePaymentStatus);
+}, updatePaymentStatus);
 
 router.delete('/:caseId/payments/:paymentId', (req, res, next) => {
   console.log('   💰 DELETE Payment:', req.params.paymentId);
   next();
-}, controller.deletePayment);
+}, deletePayment);
 
 console.log('   ✅ GET    /:caseId/payments/stats  (⚠️  MUST BE FIRST)');
 console.log('   ✅ GET    /:caseId/payments');
@@ -109,7 +124,7 @@ console.log('📝 Registering Note Routes...');
 router.get('/:caseId/notes', (req, res, next) => {
   console.log('   📝 GET Notes for case:', req.params.caseId);
   next();
-}, controller.getNotes);
+}, getNotes);
 
 router.post('/:caseId/notes', (req, res, next) => {
   console.log('   📝 POST Note for case:', req.params.caseId);
@@ -118,18 +133,18 @@ router.post('/:caseId/notes', (req, res, next) => {
   }
   if (req.body?.category) console.log('      Category:', req.body.category);
   next();
-}, controller.addNote);
+}, addNote);
 
 router.put('/:caseId/notes/:noteId', (req, res, next) => {
   console.log('   📝 PUT Note:', req.params.noteId);
   if (req.body?.content) console.log('      Updated content length:', req.body.content.length);
   next();
-}, controller.updateNote);
+}, updateNote);
 
 router.delete('/:caseId/notes/:noteId', (req, res, next) => {
   console.log('   📝 DELETE Note:', req.params.noteId);
   next();
-}, controller.deleteNote);
+}, deleteNote);
 
 console.log('   ✅ GET    /:caseId/notes');
 console.log('   ✅ POST   /:caseId/notes');
@@ -209,4 +224,4 @@ console.log('   • Utility Routes: 1');
 console.log('🧪 Test Route: GET /api/casedetails/test');
 console.log('╚═══════════════════════════════════════════════════════════╝\n');
 
-module.exports = router;
+export default router;

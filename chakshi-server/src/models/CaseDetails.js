@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 console.log('🔧 Loading Case Details Models...');
 
@@ -261,7 +261,7 @@ console.log('   📅 Timeline Model');
 console.log('   💰 Payment Model');
 console.log('   📝 Note Model');
 
-module.exports = {
+export {
   Timeline,
   Payment,
   Note

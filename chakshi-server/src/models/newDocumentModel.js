@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const newDocumentSchema = new mongoose.Schema(
   {
@@ -190,4 +190,4 @@ newDocumentSchema.statics.findByCaseId = function(caseId) {
   }).sort({ uploadedAt: -1 });
 };
 
-module.exports = mongoose.model('NewDocument', newDocumentSchema);
+export default mongoose.model('NewDocument', newDocumentSchema);

@@ -1,9 +1,14 @@
-const express = require('express');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import NewAssignment from '../models/newAssignmentModel.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const NewAssignment = require('../models/newAssignmentModel');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads/assignments');
@@ -236,4 +241,4 @@ router.get('/calendar/events', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

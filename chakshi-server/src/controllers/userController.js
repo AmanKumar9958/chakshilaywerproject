@@ -1,7 +1,7 @@
-const User = require('../models/User');
+import User from '../models/User.js';
 
 // Create
-exports.createUser = async (req, res, next) => {
+export const createUser = async (req, res, next) => {
   try {
     const { name, email, role } = req.body;
     const exists = await User.findOne({ email });
@@ -15,7 +15,7 @@ exports.createUser = async (req, res, next) => {
 };
 
 // Read all (with basic pagination)
-exports.getUsers = async (req, res, next) => {
+export const getUsers = async (req, res, next) => {
   try {
     const page = Math.max(parseInt(req.query.page || '1', 10), 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit || '10', 10), 1), 100);
@@ -36,7 +36,7 @@ exports.getUsers = async (req, res, next) => {
 };
 
 // Read one
-exports.getUserById = async (req, res, next) => {
+export const getUserById = async (req, res, next) => {
   try {
     const item = await User.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'User not found' });
@@ -47,7 +47,7 @@ exports.getUserById = async (req, res, next) => {
 };
 
 // Update
-exports.updateUser = async (req, res, next) => {
+export const updateUser = async (req, res, next) => {
   try {
     const { name, role } = req.body;
     const item = await User.findByIdAndUpdate(
@@ -63,7 +63,7 @@ exports.updateUser = async (req, res, next) => {
 };
 
 // Delete
-exports.deleteUser = async (req, res, next) => {
+export const deleteUser = async (req, res, next) => {
   try {
     const item = await User.findByIdAndDelete(req.params.id);
     if (!item) return res.status(404).json({ message: 'User not found' });

@@ -60,7 +60,7 @@ const Cases = () => {
     red: '#ef4444'
   };
 
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000'
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://server.chakshi.com';
 
   const [selectedCase, setSelectedCase] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');

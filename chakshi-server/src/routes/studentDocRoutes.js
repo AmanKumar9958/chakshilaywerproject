@@ -1,27 +1,36 @@
-const express = require('express');
+import express from 'express';
+import { 
+  uploadMiddleware,
+  createDocument,
+  getAllDocuments,
+  downloadDocument,
+  viewDocument,
+  updateDocument,
+  deleteDocument 
+} from '../controllers/studentDocController.js';
+
 const router = express.Router();
-const documentController = require('../controllers/studentDocController');
 
 // Upload document (matches frontend: /documents/upload)
 router.post(
   '/documents/upload',
-  documentController.uploadMiddleware,
-  documentController.createDocument
+  uploadMiddleware,
+  createDocument
 );
 
 // Get all documents
-router.get('/documents', documentController.getAllDocuments);
+router.get('/documents', getAllDocuments);
 
 // Download document
-router.get('/documents/download/:id', documentController.downloadDocument);
+router.get('/documents/download/:id', downloadDocument);
 
 // View document (stream for preview)
-router.get('/documents/view/:id', documentController.viewDocument);
+router.get('/documents/view/:id', viewDocument);
 
 // Update document title
-router.put('/documents/:id', documentController.updateDocument);
+router.put('/documents/:id', updateDocument);
 
 // Delete document
-router.delete('/documents/:id', documentController.deleteDocument);
+router.delete('/documents/:id', deleteDocument);
 
-module.exports = router;
+export default router;

@@ -1,5 +1,5 @@
-const express = require('express');
-const {
+import express from 'express';
+import {
   createAssignment,
   getAllAssignments,
   getAssignmentById,
@@ -7,7 +7,7 @@ const {
   deleteAssignment,
   getAssignmentsByCourse,
   toggleStar
-} = require('../controllers/newAssignmentController');
+} from '../controllers/newAssignmentController.js';
 
 const router = express.Router();
 
@@ -117,4 +117,4 @@ console.log('   ✏️ PUT    /api/assignments/:id            - Update Assignmen
 console.log('   🗑️ DELETE /api/assignments/:id            - Delete Assignment');
 console.log('═══════════════════════════════════════════════════════════\n');
 
-module.exports = router;
+export default router;

@@ -1,9 +1,9 @@
-const NewAssignment = require('../models/newAssignmentModel');
+import NewAssignment from '../models/newAssignmentModel.js';
 
 // @desc    Create new assignment
 // @route   POST /api/assignments
 // @access  Public (No middleware)
-exports.createAssignment = async (req, res) => {
+export const createAssignment = async (req, res) => {
   console.log('\n========================================');
   console.log('📝 CREATE ASSIGNMENT CONTROLLER CALLED');
   console.log('========================================');
@@ -94,7 +94,7 @@ exports.createAssignment = async (req, res) => {
 // @desc    Get all assignments
 // @route   GET /api/assignments
 // @access  Public
-exports.getAllAssignments = async (req, res) => {
+export const getAllAssignments = async (req, res) => {
   console.log('\n========================================');
   console.log('📋 GET ALL ASSIGNMENTS CONTROLLER CALLED');
   console.log('========================================');
@@ -198,7 +198,7 @@ exports.getAllAssignments = async (req, res) => {
 // @desc    Get single assignment by ID
 // @route   GET /api/assignments/:id
 // @access  Public
-exports.getAssignmentById = async (req, res) => {
+export const getAssignmentById = async (req, res) => {
   console.log('\n========================================');
   console.log('🔍 GET ASSIGNMENT BY ID CONTROLLER CALLED');
   console.log('========================================');
@@ -247,7 +247,7 @@ exports.getAssignmentById = async (req, res) => {
 // @desc    Update assignment
 // @route   PUT /api/assignments/:id
 // @access  Public
-exports.updateAssignment = async (req, res) => {
+export const updateAssignment = async (req, res) => {
   console.log('\n========================================');
   console.log('✏️ UPDATE ASSIGNMENT CONTROLLER CALLED');
   console.log('========================================');
@@ -300,7 +300,7 @@ exports.updateAssignment = async (req, res) => {
 // @desc    Delete assignment (soft delete)
 // @route   DELETE /api/assignments/:id
 // @access  Public
-exports.deleteAssignment = async (req, res) => {
+export const deleteAssignment = async (req, res) => {
   console.log('\n========================================');
   console.log('🗑️ DELETE ASSIGNMENT CONTROLLER CALLED');
   console.log('========================================');
@@ -349,7 +349,7 @@ exports.deleteAssignment = async (req, res) => {
 // @desc    Get assignments by course
 // @route   GET /api/assignments/course/:course
 // @access  Public
-exports.getAssignmentsByCourse = async (req, res) => {
+export const getAssignmentsByCourse = async (req, res) => {
   console.log('\n========================================');
   console.log('📚 GET ASSIGNMENTS BY COURSE CONTROLLER CALLED');
   console.log('========================================');
@@ -383,7 +383,7 @@ exports.getAssignmentsByCourse = async (req, res) => {
 // @desc    Toggle starred status
 // @route   PATCH /api/assignments/:id/star
 // @access  Public
-exports.toggleStar = async (req, res) => {
+export const toggleStar = async (req, res) => {
   console.log('\n========================================');
   console.log('⭐ TOGGLE STAR CONTROLLER CALLED');
   console.log('========================================');

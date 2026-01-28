@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   FiBell, FiUser, FiLogOut, FiSettings, FiHome, FiBriefcase, FiFileText, FiFolder,
-  FiSearch, FiChevronDown, FiMenu, FiX 
+  FiSearch, FiChevronDown, FiMenu, FiX, FiCpu
 } from 'react-icons/fi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+
 
 const Navbar = ({ collapsed, setCollapsed }) => {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -16,12 +17,15 @@ const Navbar = ({ collapsed, setCollapsed }) => {
   const [hoveredNav, setHoveredNav] = useState(null);
   const [isOnline] = useState(true);
 
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
 
+
   const notificationRef = useRef(null);
   const userMenuRef = useRef(null);
+
 
   // Enhanced color palette with gradients
   const colors = {
@@ -44,6 +48,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     navy25: 'rgba(31, 40, 57, 0.25)',
   };
 
+
   // Enhanced shadows and glows
   const shadows = {
     subtle: `0 2px 12px ${colors.navy05}`,
@@ -54,18 +59,22 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     floating: `0 12px 40px ${colors.navy25}`,
   };
 
-  // Navigation structure
+
+  // Navigation structure - UPDATED WITH AI HUB
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FiHome, path: '/clerk/dashboard' },
     { id: 'cases', label: 'Cases', icon: FiBriefcase, path: '/clerk/cases' },
     { id: 'calendar', label: 'Calendar', icon: FiUser, path: '/clerk/calendar' },
     { id: 'documents', label: 'Documents', icon: FiFolder, path: '/clerk/documents' },
-    { id: 'reports', label: 'General Parties', icon: FiFileText, path: '/clerk/reports' }
+    { id: 'reports', label: 'General Parties', icon: FiFileText, path: '/clerk/reports' },
+    { id: 'ai-hub', label: 'AI Hub', icon: FiCpu, path: '/advocate/ai-hub', isNew: true }
   ];
+
 
   const toolItems = [
     { id: 'help', label: 'Settings', icon: FiSearch, path: '/clerk/help' }
   ];
+
 
   // Mock notifications
   const notifications = [
@@ -75,8 +84,8 @@ const Navbar = ({ collapsed, setCollapsed }) => {
   ];
   const unreadCount = notifications.filter(n => n.unread).length;
 
+
   // Active nav state
-  // Dropdown closing logic
   useEffect(() => {
     const allItems = [...navItems, ...toolItems];
     const curr = allItems.find(item => location.pathname.startsWith(item.path));
@@ -84,6 +93,8 @@ const Navbar = ({ collapsed, setCollapsed }) => {
       setActiveNavItem(curr.id);
     }
   }, [location.pathname]);
+
+  // Dropdown closing logic
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -96,6 +107,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
 
   // Logout action
   const handleLogout = useCallback(async () => {
@@ -110,6 +122,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     }
   }, [logout, navigate]);
 
+
   // Navigation click
   const handleNavClick = (item) => {
     setActiveNavItem(item.id);
@@ -117,10 +130,11 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     navigate(item.path);
   };
 
-  // Sidebar Navigation Item Component
+
+  // Sidebar Navigation Item Component - UPDATED WITH NEW BADGE
   const SidebarNavItem = ({ item }) => {
     const isActive = activeNavItem === item.id;
-    
+
     return (
       <button
         onClick={() => handleNavClick(item)}
@@ -155,9 +169,23 @@ const Navbar = ({ collapsed, setCollapsed }) => {
         <span className="ml-3 font-semibold text-sm whitespace-nowrap">
           {item.label}
         </span>
+        {item.isNew && (
+          <span
+            className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full animate-pulse-subtle"
+            style={{
+              backgroundColor: colors.green,
+              color: colors.white,
+              fontSize: '9px',
+              boxShadow: `0 0 10px rgba(16, 185, 129, 0.3)`
+            }}
+          >
+            NEW
+          </span>
+        )}
       </button>
     );
   };
+
 
   return (
     <>
@@ -168,6 +196,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
+
 
       {/* Sidebar */}
       <aside
@@ -195,7 +224,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             >
               <span className="text-white font-bold">⚖️</span>
             </div>
-            
+
             <div className="ml-3">
               <h1 className="text-base font-bold" style={{ color: colors.navy }}>
                 Chakshi Legal
@@ -206,6 +235,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             </div>
           </div>
         </div>
+
 
         {/* User Profile Section */}
         <div
@@ -243,6 +273,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
           </div>
         </div>
 
+
         {/* Navigation Section */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 custom-scrollbar">
           {/* Main Navigation */}
@@ -258,51 +289,28 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             ))}
           </div>
 
+
           {/* Divider */}
           <div
             className="my-4 border-t"
             style={{ borderColor: colors.gold15 }}
           />
 
+
           {/* Settings Section */}
           <div>
-            {/* <p
-              className="px-4 mb-3 text-xs font-bold uppercase tracking-wider"
-              style={{ color: colors.gray }}
-            >
-              Settings
-            </p> */}
             {toolItems.map(item => (
               <SidebarNavItem key={item.id} item={item} />
             ))}
           </div>
         </nav>
 
+
         {/* Bottom Actions */}
         <div
           className="border-t p-3"
           style={{ borderColor: colors.gold15 }}
         >
-          {/* Online Status */}
-          {/* <div
-            className="flex items-center mb-3 px-3 py-2 rounded-lg"
-            style={{ backgroundColor: colors.gold05 }}
-          >
-            <div
-              className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isOnline ? 'animate-pulse' : ''}`}
-              style={{
-                backgroundColor: isOnline ? colors.green : colors.gray,
-                boxShadow: isOnline ? `0 0 8px ${colors.green}` : 'none'
-              }}
-            />
-            <span
-              className="ml-2 text-xs font-semibold"
-              style={{ color: isOnline ? colors.green : colors.gray }}
-            >
-              {isOnline ? 'Online' : 'Offline'}
-            </span>
-          </div> */}
-
           {/* Notifications */}
           <div className="relative mb-3" ref={notificationRef}>
             <button
@@ -331,6 +339,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
               <span className="ml-3 font-semibold text-sm">Notifications</span>
             </button>
 
+
             {/* Notifications Dropdown */}
             {showNotifications && (
               <div
@@ -355,6 +364,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
                     {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}
                   </p>
                 </div>
+
 
                 <div className="p-3 max-h-96 overflow-y-auto custom-scrollbar">
                   {notifications.map(notif => (
@@ -392,6 +402,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             )}
           </div>
 
+
           {/* User Menu */}
           <div className="relative mb-3" ref={userMenuRef}>
             <button
@@ -421,6 +432,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
               </div>
             </button>
 
+
             {/* User Menu Dropdown */}
             {showUserMenu && (
               <div
@@ -443,6 +455,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
                   </h3>
                 </div>
 
+
                 <div className="p-3">
                   <button
                     className="flex items-center w-full px-4 py-3 rounded-xl transition-all duration-300 hover:scale-[1.02] mb-2 border-2"
@@ -458,6 +471,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
                     <FiSettings className="w-5 h-5 mr-3" style={{ color: colors.gold }} />
                     <span className="text-sm font-semibold">Settings</span>
                   </button>
+
 
                   <button
                     onClick={handleLogout}
@@ -477,6 +491,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
         </div>
       </aside>
 
+
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -490,6 +505,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
         {isMobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
       </button>
 
+
       {/* Custom Styles */}
       <style>{`
         @keyframes pulse {
@@ -497,29 +513,41 @@ const Navbar = ({ collapsed, setCollapsed }) => {
           50% { transform: scale(1.05); opacity: 0.8; }
         }
 
+        @keyframes pulse-subtle {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+
+
         .animate-pulse {
           animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+
+        .animate-pulse-subtle {
+          animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
 
         /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-track {
           background: ${colors.gold05};
           border-radius: 10px;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: ${colors.gold};
           border-radius: 10px;
           transition: all 0.3s ease;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #9c835a;
         }
+
 
         /* Focus styles for accessibility */
         button:focus-visible {
@@ -527,6 +555,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
           outline-offset: 2px;
         }
       `}</style>
+
 
       {/* Loading Overlay */}
       {isLoggingOut && (
@@ -543,5 +572,6 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     </>
   );
 };
+
 
 export default Navbar;

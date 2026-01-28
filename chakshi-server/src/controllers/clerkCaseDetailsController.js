@@ -1,7 +1,7 @@
-const ClerkCaseDetails = require('../models/ClerkCaseDetails');
+import ClerkCaseDetails from '../models/ClerkCaseDetails.js';
 
 // Get single case details
-exports.getClerkCaseDetails = async (req, res) => {
+export const getClerkCaseDetails = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -32,7 +32,7 @@ exports.getClerkCaseDetails = async (req, res) => {
 };
 
 // Get all cases
-exports.getAllClerkCaseDetails = async (req, res) => {
+export const getAllClerkCaseDetails = async (req, res) => {
   try {
     const { status, priority, court, search, page = 1, limit = 20 } = req.query;
 
@@ -77,7 +77,7 @@ exports.getAllClerkCaseDetails = async (req, res) => {
 };
 
 // Create new case
-exports.createClerkCaseDetails = async (req, res) => {
+export const createClerkCaseDetails = async (req, res) => {
   try {
     const caseData = {
       ...req.body,
@@ -112,7 +112,7 @@ exports.createClerkCaseDetails = async (req, res) => {
 };
 
 // Update case details
-exports.updateClerkCaseDetails = async (req, res) => {
+export const updateClerkCaseDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -152,7 +152,7 @@ exports.updateClerkCaseDetails = async (req, res) => {
 };
 
 // Add case history/milestone
-exports.addClerkCaseHistory = async (req, res) => {
+export const addClerkCaseHistory = async (req, res) => {
   try {
     const { id } = req.params;
     const { event, details, date, time, by } = req.body;
@@ -202,7 +202,7 @@ exports.addClerkCaseHistory = async (req, res) => {
 };
 
 // Update case history
-exports.updateClerkCaseHistory = async (req, res) => {
+export const updateClerkCaseHistory = async (req, res) => {
   try {
     const { id, historyId } = req.params;
     const updates = req.body;
@@ -244,7 +244,7 @@ exports.updateClerkCaseHistory = async (req, res) => {
 };
 
 // Mark milestone as complete
-exports.markClerkCaseMilestoneComplete = async (req, res) => {
+export const markClerkCaseMilestoneComplete = async (req, res) => {
   try {
     const { id, historyId } = req.params;
     const { completedBy } = req.body;
@@ -285,7 +285,7 @@ exports.markClerkCaseMilestoneComplete = async (req, res) => {
 };
 
 // Add remark to case history
-exports.addClerkCaseHistoryRemark = async (req, res) => {
+export const addClerkCaseHistoryRemark = async (req, res) => {
   try {
     const { id, historyId } = req.params;
     const { text, by } = req.body;
@@ -330,7 +330,7 @@ exports.addClerkCaseHistoryRemark = async (req, res) => {
 };
 
 // Add hearing
-exports.addClerkCaseHearing = async (req, res) => {
+export const addClerkCaseHearing = async (req, res) => {
   try {
     const { id } = req.params;
     const hearingData = {
@@ -371,7 +371,7 @@ exports.addClerkCaseHearing = async (req, res) => {
 };
 
 // Update hearing
-exports.updateClerkCaseHearing = async (req, res) => {
+export const updateClerkCaseHearing = async (req, res) => {
   try {
     const { id, hearingId } = req.params;
     const updates = req.body;
@@ -414,7 +414,7 @@ exports.updateClerkCaseHearing = async (req, res) => {
 };
 
 // Delete hearing
-exports.deleteClerkCaseHearing = async (req, res) => {
+export const deleteClerkCaseHearing = async (req, res) => {
   try {
     const { id, hearingId } = req.params;
 
@@ -450,7 +450,7 @@ exports.deleteClerkCaseHearing = async (req, res) => {
 };
 
 // Delete case
-exports.deleteClerkCaseDetails = async (req, res) => {
+export const deleteClerkCaseDetails = async (req, res) => {
   try {
     const { id } = req.params;
 

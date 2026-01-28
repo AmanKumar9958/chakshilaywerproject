@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 // API base URL
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = 'https://server.chakshi.com';
 
 const GeneralPartyDetails = () => {
   const colors = {

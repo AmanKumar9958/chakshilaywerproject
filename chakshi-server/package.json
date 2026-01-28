@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "chakshi-server",
   "version": "1.4.0",
   "description": "Chakshi Legal Management System - Backend API",

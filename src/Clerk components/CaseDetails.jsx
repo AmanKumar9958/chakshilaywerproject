@@ -3,7 +3,7 @@ import { useParams, useNavigate, useOutletContext, Link } from 'react-router-dom
 import { useAuth } from '../contexts/AuthContext';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://server.chakshi.com';
 // ============= DOCUMENTS TAB COMPONENT =============
 const DocumentsTab = ({ 
   documents, 

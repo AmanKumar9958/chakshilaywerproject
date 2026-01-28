@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const documentSchema = new mongoose.Schema({
   title: {
@@ -65,4 +65,4 @@ const documentSchema = new mongoose.Schema({
 documentSchema.index({ uploadedAt: -1 });
 documentSchema.index({ documentType: 1 });
 
-module.exports = mongoose.model('StudentDocument', documentSchema);
+export default mongoose.model('StudentDocument', documentSchema);

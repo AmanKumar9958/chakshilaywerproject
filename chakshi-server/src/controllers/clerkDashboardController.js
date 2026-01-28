@@ -1,5 +1,5 @@
 import ClerkDashboard from '../models/ClerkDashboard.js';
-import NewCaseModel from '../models/NewCaseModel.js'; // Main case model
+import NewCaseModel from '../models/newCaseModel.js'; // Main case model
 import ClerkCaseDetails from '../models/ClerkCaseDetails.js'; // Only for hearings
 
 console.log('🎯 ═══════════════════════════════════════');

@@ -1,43 +1,12 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import Case from '../models/Case.js';
+import { Timeline, Payment, Note } from '../models/CaseDetails.js';
 
 console.log('🎯 ═══════════════════════════════════════════════════');
 console.log('🎯 Case Detail View Controller Loading...');
 console.log('🎯 ═══════════════════════════════════════════════════');
 
-// Import models with error handling
-let Case, Timeline, Payment, Note;
-
-try {
-  // Try to import Case model
-  Case = require('../models/Case');
-  console.log('📦 Case model imported');
-  console.log('   Type:', typeof Case);
-  console.log('   Has findById?', typeof Case?.findById === 'function' ? '✅' : '❌');
-  
-  // If Case has .default property (ES6 module), use it
-  if (Case && Case.default) {
-    console.log('   ⚠️ Case has .default - using it');
-    Case = Case.default;
-  }
-  
-  // Import CaseDetails models
-  const CaseDetailsModels = require('../models/CaseDetails');
-  Timeline = CaseDetailsModels.Timeline;
-  Payment = CaseDetailsModels.Payment;
-  Note = CaseDetailsModels.Note;
-  
-  console.log('📦 CaseDetails models imported');
-  console.log('   Timeline:', Timeline ? '✅' : '❌');
-  console.log('   Payment:', Payment ? '✅' : '❌');
-  console.log('   Note:', Note ? '✅' : '❌');
-  
-} catch (error) {
-  console.error('❌ Error importing models:', error.message);
-  console.error('   Make sure Case.js and CaseDetails.js exist in models folder');
-  process.exit(1);
-}
-
-// Validate Case model has required methods
+// Validate all models imported successfully
 if (!Case || typeof Case.findById !== 'function') {
   console.error('❌ CRITICAL: Case model is invalid!');
   console.error('   Case:', Case);
@@ -48,6 +17,14 @@ if (!Case || typeof Case.findById !== 'function') {
   process.exit(1);
 }
 
+if (!Timeline || !Payment || !Note) {
+  console.error('❌ CRITICAL: CaseDetails models missing!');
+  console.error('   Timeline:', Timeline ? '✅' : '❌');
+  console.error('   Payment:', Payment ? '✅' : '❌');
+  console.error('   Note:', Note ? '✅' : '❌');
+  process.exit(1);
+}
+
 console.log('✅ All models validated successfully');
 console.log('🎯 ═══════════════════════════════════════════════════\n');
 
@@ -55,7 +32,7 @@ console.log('🎯 ════════════════════�
 // TIMELINE CONTROLLERS
 // ═══════════════════════════════════════════════════════════════
 
-exports.addTimelineEntry = async (req, res) => {
+export const addTimelineEntry = async (req, res) => {
   try {
     const { caseId } = req.params;
     const { stage, date, status, description, remarks } = req.body;
@@ -127,7 +104,7 @@ exports.addTimelineEntry = async (req, res) => {
   }
 };
 
-exports.getTimeline = async (req, res) => {
+export const getTimeline = async (req, res) => {
   try {
     const { caseId } = req.params;
     
@@ -161,7 +138,7 @@ exports.getTimeline = async (req, res) => {
   }
 };
 
-exports.updateTimelineStatus = async (req, res) => {
+export const updateTimelineStatus = async (req, res) => {
   try {
     const { timelineId } = req.params;
     const { status } = req.body;
@@ -216,7 +193,7 @@ exports.updateTimelineStatus = async (req, res) => {
   }
 };
 
-exports.deleteTimelineEntry = async (req, res) => {
+export const deleteTimelineEntry = async (req, res) => {
   try {
     const { timelineId } = req.params;
 
@@ -261,7 +238,7 @@ exports.deleteTimelineEntry = async (req, res) => {
 // PAYMENT CONTROLLERS
 // ═══════════════════════════════════════════════════════════════
 
-exports.addPayment = async (req, res) => {
+export const addPayment = async (req, res) => {
   try {
     const { caseId } = req.params;
     const { description, amount, date, status, paymentMethod, transactionId, remarks } = req.body;
@@ -339,7 +316,7 @@ exports.addPayment = async (req, res) => {
   }
 };
 
-exports.getPayments = async (req, res) => {
+export const getPayments = async (req, res) => {
   try {
     const { caseId } = req.params;
     
@@ -375,7 +352,7 @@ exports.getPayments = async (req, res) => {
   }
 };
 
-exports.updatePaymentStatus = async (req, res) => {
+export const updatePaymentStatus = async (req, res) => {
   try {
     const { paymentId } = req.params;
     const { status } = req.body;
@@ -430,7 +407,7 @@ exports.updatePaymentStatus = async (req, res) => {
   }
 };
 
-exports.getPaymentStats = async (req, res) => {
+export const getPaymentStats = async (req, res) => {
   try {
     const { caseId } = req.params;
     
@@ -468,7 +445,7 @@ exports.getPaymentStats = async (req, res) => {
   }
 };
 
-exports.deletePayment = async (req, res) => {
+export const deletePayment = async (req, res) => {
   try {
     const { paymentId } = req.params;
 
@@ -513,7 +490,7 @@ exports.deletePayment = async (req, res) => {
 // NOTES CONTROLLERS
 // ═══════════════════════════════════════════════════════════════
 
-exports.addNote = async (req, res) => {
+export const addNote = async (req, res) => {
   try {
     const { caseId } = req.params;
     const { content, author, category, tags } = req.body;
@@ -576,7 +553,7 @@ exports.addNote = async (req, res) => {
   }
 };
 
-exports.getNotes = async (req, res) => {
+export const getNotes = async (req, res) => {
   try {
     const { caseId } = req.params;
     
@@ -613,7 +590,7 @@ exports.getNotes = async (req, res) => {
   }
 };
 
-exports.updateNote = async (req, res) => {
+export const updateNote = async (req, res) => {
   try {
     const { noteId } = req.params;
     const { content, category, tags, isPinned } = req.body;
@@ -666,7 +643,7 @@ exports.updateNote = async (req, res) => {
   }
 };
 
-exports.deleteNote = async (req, res) => {
+export const deleteNote = async (req, res) => {
   try {
     const { noteId } = req.params;
 

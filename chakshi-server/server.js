@@ -3,13 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
-
-// Create require for CommonJS modules (only for db.js which is CommonJS)
-const require = createRequire(import.meta.url);
-
-// Import only db.js as CommonJS (if it's CommonJS)
-const connectDB = require('./src/config/db.js');
+import connectDB from './src/config/db.js';
 
 // Import all routes as ES modules
 import clientRoutes from './src/routes/clientRoutes.js';

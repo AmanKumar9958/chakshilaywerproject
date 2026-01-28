@@ -1,5 +1,5 @@
 import ClerkGeneralParties from '../models/clerkGeneralPartiesModel.js';
-import NewCaseModel from '../models/NewCaseModel.js';
+import NewCaseModel from '../models/newCaseModel.js';
 
 console.log('🎯 ═══════════════════════════════════════');
 console.log('📂 Clerk General Parties Controller Loaded');

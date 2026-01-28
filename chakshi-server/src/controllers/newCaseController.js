@@ -1,4 +1,4 @@
-import NewCaseModel from '../models/NewCaseModel.js';
+import NewCaseModel from '../models/newCaseModel.js';
 
 console.log('🎯 ═══════════════════════════════════════');
 console.log('📂 New Case Controller Loaded (ES6 Module)');

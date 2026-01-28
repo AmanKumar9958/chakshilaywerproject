@@ -1,8 +1,8 @@
 // controllers/clientController.js
-const Client = require("../models/Client");
+import Client from "../models/Client.js";
 
 // Create new client
-exports.createClient = async (req, res) => {
+export const createClient = async (req, res) => {
   try {
     // ✅ No need to manually add fields now - they have defaults in schema
     const client = await Client.create(req.body);
@@ -22,7 +22,7 @@ exports.createClient = async (req, res) => {
 };
 
 // Get all clients
-exports.getAllClients = async (req, res) => {
+export const getAllClients = async (req, res) => {
   try {
     const clients = await Client.find().sort({ createdAt: -1 });
     res.json({ success: true, clients });
@@ -33,7 +33,7 @@ exports.getAllClients = async (req, res) => {
 };
 
 // Get one client by ID
-exports.getClientById = async (req, res) => {
+export const getClientById = async (req, res) => {
   try {
     const client = await Client.findById(req.params.id);
     
@@ -52,7 +52,7 @@ exports.getClientById = async (req, res) => {
 };
 
 // Update client
-exports.updateClient = async (req, res) => {
+export const updateClient = async (req, res) => {
   try {
     const client = await Client.findByIdAndUpdate(
       req.params.id, 
@@ -75,7 +75,7 @@ exports.updateClient = async (req, res) => {
 };
 
 // Delete client
-exports.deleteClient = async (req, res) => {
+export const deleteClient = async (req, res) => {
   try {
     const client = await Client.findByIdAndDelete(req.params.id);
     

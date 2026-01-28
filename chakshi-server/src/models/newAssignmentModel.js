@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const newAssignmentSchema = new mongoose.Schema(
   {
@@ -285,4 +285,4 @@ newAssignmentSchema.statics.findOverdue = function() {
   }).sort({ dueDate: 1 });
 };
 
-module.exports = mongoose.model('NewAssignment', newAssignmentSchema);
+export default mongoose.model('NewAssignment', newAssignmentSchema);

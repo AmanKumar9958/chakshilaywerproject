@@ -1,12 +1,12 @@
-const NewDocument = require('../models/newDocumentModel');
-const NewCase = require('../models/NewCaseModel');
-const fs = require('fs');
-const path = require('path');
+import NewDocument from '../models/newDocumentModel.js';
+import NewCase from '../models/newCaseModel.js';
+import fs from 'fs';
+import path from 'path';
 
 // @desc    Upload new document
 // @route   POST /api/new-document/upload
 // @access  Public (No middleware)
-exports.uploadDocument = async (req, res) => {
+export const uploadDocument = async (req, res) => {
   console.log('\n========================================');
   console.log('📤 UPLOAD DOCUMENT CONTROLLER CALLED');
   console.log('========================================');
@@ -119,7 +119,7 @@ exports.uploadDocument = async (req, res) => {
 // @desc    Get all documents
 // @route   GET /api/new-document
 // @access  Public
-exports.getAllDocuments = async (req, res) => {
+export const getAllDocuments = async (req, res) => {
   console.log('\n========================================');
   console.log('📋 GET ALL DOCUMENTS CONTROLLER CALLED');
   console.log('========================================');
@@ -207,7 +207,7 @@ exports.getAllDocuments = async (req, res) => {
 // @desc    Get single document by ID
 // @route   GET /api/new-document/:id
 // @access  Public
-exports.getDocumentById = async (req, res) => {
+export const getDocumentById = async (req, res) => {
   console.log('\n========================================');
   console.log('🔍 GET DOCUMENT BY ID CONTROLLER CALLED');
   console.log('========================================');
@@ -258,7 +258,7 @@ exports.getDocumentById = async (req, res) => {
 // @desc    View document (stream file)
 // @route   GET /api/new-document/view/:id
 // @access  Public
-exports.viewDocument = async (req, res) => {
+export const viewDocument = async (req, res) => {
   console.log('\n========================================');
   console.log('👁️ VIEW DOCUMENT CONTROLLER CALLED');
   console.log('========================================');
@@ -319,7 +319,7 @@ exports.viewDocument = async (req, res) => {
 // @desc    Download document
 // @route   GET /api/new-document/download/:id
 // @access  Public
-exports.downloadDocument = async (req, res) => {
+export const downloadDocument = async (req, res) => {
   console.log('\n========================================');
   console.log('⬇️ DOWNLOAD DOCUMENT CONTROLLER CALLED');
   console.log('========================================');
@@ -381,7 +381,7 @@ exports.downloadDocument = async (req, res) => {
 // @desc    Delete document (soft delete)
 // @route   DELETE /api/new-document/:id
 // @access  Public
-exports.deleteDocument = async (req, res) => {
+export const deleteDocument = async (req, res) => {
   console.log('\n========================================');
   console.log('🗑️ DELETE DOCUMENT CONTROLLER CALLED');
   console.log('========================================');
@@ -431,7 +431,7 @@ exports.deleteDocument = async (req, res) => {
 // @desc    Get documents by case ID
 // @route   GET /api/new-document/case/:caseId
 // @access  Public
-exports.getDocumentsByCase = async (req, res) => {
+export const getDocumentsByCase = async (req, res) => {
   console.log('\n========================================');
   console.log('📁 GET DOCUMENTS BY CASE CONTROLLER CALLED');
   console.log('========================================');

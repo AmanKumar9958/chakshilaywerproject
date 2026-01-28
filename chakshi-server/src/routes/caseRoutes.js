@@ -1,11 +1,11 @@
-const express = require("express");
-const Case = require('../models/Case.js'); // Import Case model
-const { 
+import express from "express";
+import Case from '../models/Case.js';
+import { 
   createCase, 
   getCases, 
   getCaseById,
   updateCase 
-} = require("../controllers/caseController");
+} from "../controllers/caseController.js";
 
 const router = express.Router();
 
@@ -114,4 +114,4 @@ console.log('   • GET Routes: 3');
 console.log('   • PUT Routes: 1');
 console.log('╚═══════════════════════════════════════════════════════════╝\n');
 
-module.exports = router;
+export default router;
