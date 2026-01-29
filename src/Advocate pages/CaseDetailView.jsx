@@ -30,7 +30,7 @@ const colors = {
   red: "#ef4444"
 };
 
-const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api` || 'https://server.chakshi.com';
+const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api` || 'https://server.chakshi.com/api';
 function formatDate(dateString) {
   if (!dateString || dateString === "NA" || dateString === "TBD" || dateString === "N/A") return dateString;
   return new Date(dateString).toLocaleDateString('en-IN', {

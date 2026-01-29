@@ -68,7 +68,7 @@ const AnalyticsDashboard = () => {
   };
 
   // API Configuration
-  const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api` || 'https://server.chakshi.com';
+  const API_BASE_URL =  'https://server.chakshi.com/api';
 
 
   // State Management
@@ -666,7 +666,7 @@ const AnalyticsDashboard = () => {
                         </div>
                         <div className="text-center">
                           <div className="text-lg font-bold" style={{color: colors.green}}>
-                            ₹{(client.totalBilled / 100000).toFixed(1)}L
+                            â‚¹{(client.totalBilled / 100000).toFixed(1)}L
                           </div>
                           <div className="text-xs" style={{color: colors.gray}}>
                             Billed
@@ -717,7 +717,7 @@ const AnalyticsDashboard = () => {
                       {selectedClient.name}
                     </h2>
                     <p className="text-sm" style={{color: colors.gray}}>
-                      {selectedClient.company} • {selectedClient.type}
+                      {selectedClient.company} â€¢ {selectedClient.type}
                     </p>
                   </div>
                 </div>
@@ -799,13 +799,13 @@ const AnalyticsDashboard = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-sm" style={{color: colors.gray}}>Total Billed:</span>
                       <span className="text-sm font-semibold" style={{color: colors.green}}>
-                        ₹{selectedClient.totalBilled.toLocaleString()}
+                        â‚¹{selectedClient.totalBilled.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm" style={{color: colors.gray}}>Outstanding Dues:</span>
                       <span className="text-sm font-semibold" style={{color: selectedClient.outstandingDues > 0 ? colors.amber : colors.green}}>
-                        ₹{selectedClient.outstandingDues.toLocaleString()}
+                        â‚¹{selectedClient.outstandingDues.toLocaleString()}
                       </span>
                     </div>
                   </div>
