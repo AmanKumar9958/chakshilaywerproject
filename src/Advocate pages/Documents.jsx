@@ -68,14 +68,17 @@ const navigate = useNavigate();
   const handleUpload = async (e) => {
     e.preventDefault();
     const data = new FormData();
+    const uploadName = (formData.name || file?.name || '').trim();
+    const uploadCategory = (formData.category || '').trim();
+
     data.append('file', file);
-    data.append('name', formData.name);
-    data.append('category', formData.category);
+    data.append('name', uploadName);
+    data.append('category', uploadCategory);
     data.append('linkedCase', formData.linkedCase);
     data.append('linkedClient', formData.linkedClient);
 
     try {
-      const res = await axios.post('${API_BASE_URL}/api/documents', data, {
+      const res = await axios.post(`${API_BASE_URL}/api/documents`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (p) => setUploadProgress(Math.round((p.loaded * 100) / p.total))
       });
@@ -112,7 +115,7 @@ const navigate = useNavigate();
   };
 
   // Enhanced document data with Indian legal categories
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://server.chakshi.com';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
 
   // Enhanced filter logic
   const filteredDocuments = documents.filter(doc => {
@@ -157,12 +160,12 @@ const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch cases
-    axios.get('${API_BASE_URL}/api/cases')
+    axios.get(`${API_BASE_URL}/api/cases`)
       .then(res => setCases(res.data.data || []))
       .catch(err => console.error('Error fetching cases:', err));
 
     // Fetch clients (optional)
-    axios.get('${API_BASE_URL}/api/clients')
+    axios.get(`${API_BASE_URL}/api/clients`)
       .then(res => setClients(res.data.data || []))
       .catch(err => console.error('Error fetching clients:', err));
   }, []);
@@ -197,10 +200,11 @@ const navigate = useNavigate();
   }, []);
 
   const fetchDocuments = async () => {
-    const res = await fetch('${API_BASE_URL}/api/documents');
+    const res = await fetch(`${API_BASE_URL}/api/documents`);
     const data = await res.json();
     console.log('Fetched Documents:', data);
-    setDocuments(data.data);
+    const docs = Array.isArray(data?.data) ? data.data : [];
+    setDocuments(docs);
   };
 
   // Enhanced handlers for new features
@@ -511,7 +515,13 @@ const navigate = useNavigate();
             <input
               type="file"
               accept=".pdf,.doc,.docx"
-              onChange={(e) => setFile(e.target.files[0])}
+              onChange={(e) => {
+                const selectedFile = e.target.files?.[0] || null;
+                setFile(selectedFile);
+                if (selectedFile && !formData.name) {
+                  setFormData({ ...formData, name: selectedFile.name });
+                }
+              }}
               required
               className="mb-3 w-full border p-2 rounded"
             />
@@ -521,6 +531,7 @@ const navigate = useNavigate();
               type="text"
               value={formData.name || file?.name || ''}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
               className="w-full border p-2 rounded mb-3"
             />
 
@@ -528,6 +539,7 @@ const navigate = useNavigate();
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              required
               className="w-full border p-2 rounded mb-3"
             >
               <option value="">Select...</option>

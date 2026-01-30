@@ -91,7 +91,10 @@ function toPrettyHtml(text) {
   let cur = [];
   for (const ln of lines) {
     if (ln.trim() === "") {
-      if (cur.length) blocks.push(cur), (cur = []);
+      if (cur.length) {
+        blocks.push(cur);
+        cur = [];
+      }
     } else cur.push(ln);
   }
   if (cur.length) blocks.push(cur);

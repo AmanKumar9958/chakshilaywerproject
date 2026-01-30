@@ -30,7 +30,8 @@ const colors = {
   red: "#ef4444"
 };
 
-const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api` || 'https://server.chakshi.com/api';
+// const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api` || 'https://server.chakshi.com/api';
+const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api` || 'http://localhost:4000/api';
 function formatDate(dateString) {
   if (!dateString || dateString === "NA" || dateString === "TBD" || dateString === "N/A") return dateString;
   return new Date(dateString).toLocaleDateString('en-IN', {
@@ -73,8 +74,6 @@ const CaseDetailView = ({ selectedCase, onClose }) => {
     fileName: ''
   });
 
-  if (!selectedCase) return null;
-
   // Fetch Case Overview on mount
  useEffect(() => {
     if (selectedCase?._id) {
@@ -91,6 +90,8 @@ const CaseDetailView = ({ selectedCase, onClose }) => {
       fetchDocuments();
     }
   }, [selectedCase]);
+
+  if (!selectedCase) return null;
 
   // API Calls
  const fetchCaseOverview = async () => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiChevronLeft, FiChevronRight, FiDownload, FiRefreshCw, FiCheck, FiCalendar } from 'react-icons/fi';
 
 const Calendar = () => {
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [syncStatus, setSyncStatus] = useState('idle');
@@ -38,11 +39,11 @@ const Calendar = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch('https://server.chakshi.com/auth/google');
+      const response = await fetch(`${API_BASE_URL}/calendar/auth/google`);
       const data = await response.json();
       
       // Open Google OAuth in same window
-      window.location.href = data.authUrl;
+      window.location.href = data.url || data.authUrl;
     } catch (error) {
       console.error('Google login error:', error);
       alert('Failed to connect to Google Calendar');
@@ -51,7 +52,7 @@ const Calendar = () => {
 
   const checkGoogleAuth = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/calendar/events', {
+      const response = await fetch(`${API_BASE_URL}/calendar/events`, {
         credentials: 'include'
       });
       
@@ -84,7 +85,7 @@ const Calendar = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/api/calendar/events', {
+      const response = await fetch(`${API_BASE_URL}/calendar/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

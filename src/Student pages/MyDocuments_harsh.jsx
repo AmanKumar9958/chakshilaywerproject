@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://server.chakshi.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
 const MyDocuments = () => {
   const navigate = useNavigate();
@@ -76,15 +76,39 @@ const MyDocuments = () => {
   const fetchDocuments = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/student/documents`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+      const [docsRes, assignmentsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/student/documents`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        }),
+        fetch(`${API_BASE_URL}/assignments`)
+      ]);
+
+      if (!docsRes.ok) throw new Error('Failed to fetch documents');
+
+      const docsData = await docsRes.json();
+      const assignmentsData = assignmentsRes.ok ? await assignmentsRes.json() : null;
+
+      const documentsList = Array.isArray(docsData?.data) ? docsData.data : [];
+      const assignmentsList = Array.isArray(assignmentsData?.data)
+        ? assignmentsData.data.map((assignment) => ({
+            _id: assignment._id,
+            title: assignment.title,
+            description: assignment.description || '',
+            documentType: 'Assignment',
+            uploadedAt: assignment.createdAt || assignment.dueDate,
+            size: 0,
+            source: 'assignment'
+          }))
+        : [];
+
+      const merged = [...documentsList, ...assignmentsList].sort((a, b) => {
+        const dateA = new Date(a.uploadedAt || 0).getTime();
+        const dateB = new Date(b.uploadedAt || 0).getTime();
+        return dateB - dateA;
       });
 
-      if (!response.ok) throw new Error('Failed to fetch documents');
-
-      const data = await response.json();
-      setDocuments(data.data || []);
+      setDocuments(merged);
       setLoading(false);
     } catch (error) {
       console.error('ERROR:', error.message);
@@ -134,7 +158,11 @@ const MyDocuments = () => {
     }
   };
 
-  const downloadDocument = async (documentId, filename) => {
+  const downloadDocument = async (documentId, filename, source) => {
+    if (source === 'assignment') {
+      alert('Assignment files are not available for download.');
+      return;
+    }
     try {
       const response = await fetch(`${API_BASE_URL}/student/documents/download/${documentId}`);
       if (!response.ok) throw new Error('Download failed');
@@ -157,6 +185,10 @@ const MyDocuments = () => {
   };
 
   const viewDocumentInPopup = async (document) => {
+    if (document?.source === 'assignment') {
+      alert('This assignment does not have a document file attached.');
+      return;
+    }
     try {
       const response = await fetch(`${API_BASE_URL}/student/documents/view/${document._id}`);
       if (!response.ok) throw new Error('View failed');
@@ -176,7 +208,11 @@ const MyDocuments = () => {
     }
   };
 
-  const deleteDocument = async (documentId) => {
+  const deleteDocument = async (documentId, source) => {
+    if (source === 'assignment') {
+      alert('Assignments can be managed from the Assignments page.');
+      return;
+    }
     if (!window.confirm('Are you sure you want to delete this document?')) return;
 
     try {
@@ -194,7 +230,11 @@ const MyDocuments = () => {
     }
   };
 
-  const updateDocumentTitle = async (documentId, newTitle) => {
+  const updateDocumentTitle = async (documentId, newTitle, source) => {
+    if (source === 'assignment') {
+      alert('Assignment titles can be edited from the Assignments page.');
+      return;
+    }
     try {
       const response = await fetch(`${API_BASE_URL}/student/documents/${documentId}`, {
         method: 'PUT',
@@ -732,7 +772,7 @@ const MyDocuments = () => {
                       placeholder="Enter new title"
                     />
                     <button
-                      onClick={() => updateDocumentTitle(previewDocument._id, editedTitle)}
+                      onClick={() => updateDocumentTitle(previewDocument._id, editedTitle, previewDocument.source)}
                       className="px-3 py-1 rounded-lg text-sm font-semibold text-white"
                       style={{ background: colors.green }}
                     >
@@ -779,7 +819,7 @@ const MyDocuments = () => {
                 )}
 
                 <button
-                  onClick={() => downloadDocument(previewDocument._id, previewDocument.filename)}
+                  onClick={() => downloadDocument(previewDocument._id, previewDocument.filename, previewDocument.source)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm"
                   style={{
                     background: `${colors.blue}15`,
@@ -826,7 +866,7 @@ const MyDocuments = () => {
                       Download the document to view it
                     </p>
                     <button
-                      onClick={() => downloadDocument(previewDocument._id, previewDocument.filename)}
+                      onClick={() => downloadDocument(previewDocument._id, previewDocument.filename, previewDocument.source)}
                       className="px-6 py-3 text-sm font-medium text-white rounded-lg"
                       style={{ background: colors.golden }}
                     >
