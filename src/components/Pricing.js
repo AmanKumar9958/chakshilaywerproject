@@ -20,6 +20,9 @@ console.log('══════════════════════�
 const TEMP_RAZORPAY_KEY = 'rzp_test_RszNE79p7k94zB'; // 👈 PUT YOUR KEY HERE
 // ⚠️⚠️⚠️ TEMPORARY HARDCODED KEY - REMOVE AFTER TESTING ⚠️⚠️⚠️
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || '';
+const PAYMENT_API_BASE = `${API_BASE_URL}/api/payment`;
+
 const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loadingPlan, setLoadingPlan] = useState(null);
@@ -108,7 +111,7 @@ const Pricing = () => {
       console.log('💵 Amount (Paise):', amount * 100);
 
       console.log('\n📡 Creating order on backend...');
-      console.log('🌐 API Endpoint: http://localhost:4000/api/payment/create-order');
+      console.log(`🌐 API Endpoint: ${PAYMENT_API_BASE}/create-order`);
       console.log('📤 Request Payload:', {
         amount: amount * 100,
         currency: 'INR',
@@ -118,7 +121,7 @@ const Pricing = () => {
       });
 
       // ⭐ Create order on backend
-      const orderResponse = await fetch('http://localhost:4000/api/payment/create-order', {
+      const orderResponse = await fetch(`${PAYMENT_API_BASE}/create-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,14 +173,14 @@ const Pricing = () => {
           
           try {
             console.log('\n🔒 Verifying payment signature on backend...');
-            console.log('🌐 API Endpoint: http://localhost:4000/api/payment/verify-payment');
+            console.log(`🌐 API Endpoint: ${PAYMENT_API_BASE}/verify-payment`);
             console.log('📤 Verification Payload:', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
             });
             
-            const verifyResponse = await fetch('http://localhost:4000/api/payment/verify-payment', {
+            const verifyResponse = await fetch(`${PAYMENT_API_BASE}/verify-payment`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

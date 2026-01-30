@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Search, Plus, X, Mail, Phone, FileText, Building, User as UserIcon, Users, Eye, Edit2, Trash2, Filter, MessageSquare, Calendar, MapPin, Briefcase, Clock, CheckCircle, Upload, Download, CreditCard, TrendingUp, Award, DollarSign, Video, File, AlertCircle } from 'lucide-react';
 // import GeneralPartyDetails from './GeneralPartyDetails';
 // API Configuration
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || ''}/api`;
 
 const Reports = () => {
   const colors = {

@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fi';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || ''}/api`;
 
 // Legal-themed color palette
 const colors = {

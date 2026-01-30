@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 // import DocumentComparison from './Documentcomparizon'; // Import the component
 
 export default function Research() {
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+  const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || ''}/api`;
   const [searchQuery, setSearchQuery] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);

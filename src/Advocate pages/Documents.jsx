@@ -115,7 +115,7 @@ const navigate = useNavigate();
   };
 
   // Enhanced document data with Indian legal categories
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || '';
 
   // Enhanced filter logic
   const filteredDocuments = documents.filter(doc => {

@@ -20,7 +20,7 @@ const Dashboard = () => {
   const { addNotification, theme, language, isOnline } = context || {};
 
   // API Base URL
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+  const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || ''}/api`;
 
   // Professional legal color palette
   const colors = {
