@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fi';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://server.chakshi.com';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
 // Legal-themed color palette
 const colors = {
@@ -57,6 +57,7 @@ const Assignments = () => {
   // Assignment Form State - UPDATED: Removed assignmentType and submissionType
   const [newAssignment, setNewAssignment] = useState({
     title: '',
+    course: 'General',
     dueDate: '',
     priority: 'medium',
     description: '',
@@ -68,31 +69,33 @@ const Assignments = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
 
-  // Mock Assignments Data
-  const [assignments, setAssignments] = useState([
-    {
-      id: 1,
-      title: 'Contract Law Case Analysis',
-      dueDate: '2024-02-15',
-      status: 'pending',
-      priority: 'high',
-      description: 'Analyze the landmark contract case',
-      estimatedTime: '3 hours',
-      submittedDate: null,
-      grade: null
-    },
-    {
-      id: 2,
-      title: 'Criminal Procedure Research',
-      dueDate: '2024-02-20',
-      status: 'in-progress',
-      priority: 'medium',
-      description: 'Research paper on criminal procedures',
-      estimatedTime: '5 hours',
-      submittedDate: null,
-      grade: null
+  // Assignments Data (loaded from API)
+  const [assignments, setAssignments] = useState([]);
+
+  const normalizeAssignment = (assignment) => ({
+    ...assignment,
+    id: assignment.id || assignment._id,
+    dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().slice(0, 10) : assignment.dueDate
+  });
+
+  const fetchAssignments = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/assignments`);
+      const data = await res.json();
+      const list = Array.isArray(data?.data) ? data.data.map(normalizeAssignment) : [];
+      setAssignments(list);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      setAssignments([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, []);
 
   // Get assignments by tab
   const getTabAssignments = useMemo(() => {
@@ -176,27 +179,45 @@ const Assignments = () => {
   };
 
   // Handle Form Submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const newId = Math.max(...assignments.map(a => a.id), 0) + 1;
-    const assignment = {
-      ...newAssignment,
-      id: newId,
-      status: 'pending',
-      submittedDate: null,
-      grade: null
-    };
 
-    setAssignments([...assignments, assignment]);
-    setShowNewAssignmentModal(false);
-    resetForm();
+    try {
+      const payload = {
+        title: newAssignment.title,
+        course: newAssignment.course || 'General',
+        dueDate: newAssignment.dueDate,
+        priority: newAssignment.priority,
+        description: newAssignment.description,
+        estimatedTime: newAssignment.estimatedTime
+      };
+
+      const res = await fetch(`${API_BASE_URL}/assignments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || 'Failed to create assignment');
+      }
+
+      const created = normalizeAssignment(data.data);
+      setAssignments((prev) => [created, ...prev]);
+      setShowNewAssignmentModal(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error creating assignment:', error);
+      alert(error.message || 'Failed to create assignment');
+    }
   };
 
   // Reset Form
   const resetForm = () => {
     setNewAssignment({
       title: '',
+      course: 'General',
       dueDate: '',
       priority: 'medium',
       description: '',
@@ -611,6 +632,21 @@ const Assignments = () => {
                     className="w-full px-4 py-2 rounded-lg border-2 focus:outline-none"
                     style={{ borderColor: colors.border.navy }}
                     placeholder="Enter assignment title"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" style={{ color: colors.text.primary }}>
+                    Course <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newAssignment.course}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, course: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border-2 focus:outline-none"
+                    style={{ borderColor: colors.border.navy }}
+                    placeholder="e.g., Contract Law"
                   />
                 </div>
 

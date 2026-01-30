@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 // import DocumentComparison from './Documentcomparizon'; // Import the component
 
 export default function Research() {
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
   const [searchQuery, setSearchQuery] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -88,25 +89,70 @@ export default function Research() {
     setFormData(prev => ({ ...prev, file }));
   };
 
-  const handleUpload = (e) => {
+  const fetchResearchDocuments = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/student/documents`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch documents');
+
+      const data = await response.json();
+      const list = Array.isArray(data?.data) ? data.data : [];
+      const researchDocs = list
+        .filter(doc => (doc.documentType || '').toLowerCase() === 'research')
+        .map(doc => ({
+          ...doc,
+          id: doc._id || doc.id,
+          title: doc.title,
+          type: 'research',
+          description: doc.description || '',
+          fileName: doc.filename || doc.originalName || doc.name || 'document',
+          sizeKb: doc.size ? Math.round(parseFloat(doc.size) / 1024) : 0,
+          uploadedAt: doc.uploadedAt || doc.createdAt || new Date().toISOString()
+        }));
+
+      setDocuments(researchDocs);
+    } catch (error) {
+      console.error('ERROR:', error.message);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchResearchDocuments();
+  }, []);
+
+  const handleUpload = async (e) => {
     e.preventDefault();
     if (!formData.file || !formData.title.trim()) {
       alert('Please provide both file and title');
       return;
     }
 
-    const newDoc = {
-      id: Date.now(),
-      title: formData.title.trim(),
-      type: 'research',
-      description: formData.description.trim(),
-      fileName: formData.file.name,
-      sizeKb: Math.round(formData.file.size / 1024),
-      uploadedAt: new Date().toISOString(),
-      file: formData.file,
-    };
+    const uploadData = new FormData();
+    uploadData.append('title', formData.title.trim());
+    uploadData.append('file', formData.file);
+    uploadData.append('documentType', 'Research');
+    uploadData.append('description', formData.description.trim());
 
-    setDocuments(prev => [newDoc, ...prev]);
+    try {
+      const response = await fetch(`${API_BASE_URL}/student/documents/upload`, {
+        method: 'POST',
+        body: uploadData
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || 'Upload failed');
+      }
+
+      await fetchResearchDocuments();
+    } catch (error) {
+      console.error('UPLOAD ERROR:', error);
+      alert(error.message || 'Upload failed');
+      return;
+    }
 
     // Reset form
     setFormData({

@@ -2,11 +2,8 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-const Document = require('../models/Document.js');
-const Case = require('../models/Case.js');
+import Document from '../models/Document.js';
+import Case from '../models/Case.js';
 
 const router = express.Router();
 

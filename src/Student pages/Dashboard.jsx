@@ -44,7 +44,7 @@ const todayISO = () => {
   return d.toISOString();
 };
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://server.chakshi.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
 function ChakshiDashboard() {
   const [activeModal, setActiveModal] = useState(null);
@@ -94,11 +94,16 @@ function ChakshiDashboard() {
   async function fetchAssignments() {
     setLoadingAssignments(true);
     try {
-      const url = `${API_BASE_URL}/student/assignments`;
+      const url = `${API_BASE_URL}/assignments`;
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch assignments');
       const data = await res.json();
-      setAssignments(data.data || []);
+      const list = Array.isArray(data?.data) ? data.data : [];
+      const normalized = list.map(a => ({
+        ...a,
+        dueAt: a.dueAt || a.dueDate
+      }));
+      setAssignments(normalized);
     } catch (error) {
       console.error('Error fetching assignments:', error);
     } finally {
@@ -108,7 +113,7 @@ function ChakshiDashboard() {
 
   async function fetchCalendarEvents() {
     try {
-      const url = `${API_BASE_URL}/student/calendar/events?range=today&at=${encodeURIComponent(todayISO())}`;
+      const url = `${API_BASE_URL}/calendar/events?range=today&at=${encodeURIComponent(todayISO())}`;
       const res = await fetch(url, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
@@ -135,7 +140,7 @@ function ChakshiDashboard() {
   async function deleteAssignment(assignmentId) {
     if (!window.confirm('Are you sure you want to delete this assignment?')) return;
     try {
-      const url = `${API_BASE_URL}/student/assignments/${assignmentId}`;
+      const url = `${API_BASE_URL}/assignments/${assignmentId}`;
       const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error('Failed to delete assignment');
       setAssignments(prev => prev.filter(a => a._id !== assignmentId));
@@ -214,7 +219,7 @@ function ChakshiDashboard() {
 
   const markAssignmentComplete = async (id) => {
     try {
-      const url = `${API_BASE_URL}/student/assignments/${id}`;
+      const url = `${API_BASE_URL}/assignments/${id}`;
       const res = await fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

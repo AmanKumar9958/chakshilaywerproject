@@ -1232,10 +1232,10 @@ const handleUploadDocument = async () => {
             </label>
             <input
               type="text"
-              value={newParty.partyName}
+              value={newParty.name}
               onChange={(e) => {
                 console.log('✏️ [Input] Party Name:', e.target.value);
-                setNewParty({ ...newParty, partyName: e.target.value });
+                setNewParty({ ...newParty, name: e.target.value });
               }}
               placeholder="Party name"
               required
@@ -1251,10 +1251,10 @@ const handleUploadDocument = async () => {
             </label>
             <input
               type="email"
-              value={newParty.email}
+              value={newParty.contact}
               onChange={(e) => {
                 console.log('✏️ [Input] Email ID:', e.target.value);
-                setNewParty({ ...newParty, email: e.target.value });
+                setNewParty({ ...newParty, contact: e.target.value });
               }}
               placeholder="Email ID"
               required
@@ -1369,8 +1369,8 @@ const handleUploadDocument = async () => {
               Party Type
             </label>
             <select
-  value={newParty.partyType}
-  onChange={(e) => setNewParty({...newParty, partyType: e.target.value})}
+  value={newParty.type}
+  onChange={(e) => setNewParty({ ...newParty, type: e.target.value })}
   className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 text-sm"
   style={{ borderColor: colors.gray + '40', minWidth: '150px' }} // set a minimum width if needed
 >

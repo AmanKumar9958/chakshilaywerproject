@@ -42,12 +42,20 @@ console.log('⚙️  Setting up middlewares...');
 
 // 1. Security & CORS
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    const allowed = [process.env.CLIENT_URL, 'http://localhost:3000', 'https://chakshi.com'].filter(Boolean);
+    if (!origin || allowed.includes(origin) || origin.startsWith('http://localhost:')) {
+      callback(null, true);
+    } else {
+      console.log('🚫 CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-console.log('   ✅ CORS configured');
+console.log('   ✅ CORS configured (Dynamic Origin Support)');
 
 // 2. Body parsers
 app.use(express.json({ limit: '10mb' }));
